@@ -91,7 +91,7 @@ wchar_t ***Table<T>::getData(int index) {
     int number = index + 1;
     wchar_t *value = new wchar_t[::wcslen(names[0]) + 1];
     wchar_t ***values = new wchar_t **[11];
-    Node<Node<Node<T>>> *nT = sortedRows[index];
+    Node<Node<Node<T>>> *nT = startOutput = sortedRows[index];
     T t = nT->getData().getData().getData();
     for(int i = 0; i < 11; i++){
         values[i] = new wchar_t *[countColumns];
