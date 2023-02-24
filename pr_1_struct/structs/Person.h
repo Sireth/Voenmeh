@@ -8,21 +8,23 @@
 
 
 struct Person {
-    char surname[20]{};
+    wchar_t surname[20]{};
     char math;
     char rus;
     char en;
     Sex sex;
 
 
-    Person(const char *surname, char math, char rus, char en, char sex);
+    Person(const wchar_t *surname, char math, char rus, char en, wchar_t sex);
 
-    char *get(int index);
+    Person();
 
-    void set(const char *str, int index);
+    wchar_t *get(int index);
+
+    void set(const wchar_t *str, int index);
 
 
-    char *operator[] (int index);
+    wchar_t *operator[] (int index);
 
 };
 

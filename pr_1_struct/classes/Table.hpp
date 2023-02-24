@@ -70,7 +70,45 @@ public:
     void outputTopOfRow(WINDOW *window, int y, int x);
 
     void splitNames();
+
+    wchar_t ***getData(int index);
+
+    void centeringString(wchar_t *dest, int sizeOfDest, const wchar_t *value);
+
 };
+
+template<typename T>
+void Table<T>::centeringString(wchar_t *dest, int sizeOfDest, const wchar_t *value) {
+    wchar_t *str = new wchar_t[sizeOfDest + 1];
+    int len = wcslen(value);
+    int padding = (sizeOfDest - len) / 2;
+    ::swprintf(str, sizeOfDest, L"%*s%ls%*s", padding, "", value, sizeOfDest - padding - len, "");
+    ::wcscpy(dest, str);
+}
+
+template<typename T>
+wchar_t ***Table<T>::getData(int index) {
+    int number = index + 1;
+    wchar_t *value = new wchar_t[::wcslen(names[0]) + 1];
+    wchar_t ***values = new wchar_t **[11];
+    Node<Node<Node<T>>> *nT = sortedRows[index];
+    T t = nT->getData().getData().getData();
+    for(int i = 0; i < 11; i++){
+        values[i] = new wchar_t *[countColumns];
+        values[i][0] = new wchar_t[::wcslen(names[0]) + 1];
+        ::swprintf(value, ::wcslen(names[0]) + 1, L"%d", number);
+        centeringString(values[i][0], ::wcslen(names[0])+1, value);
+        for(int j = 0; j < countColumns - 1; j++){
+            ::wcscpy(value, t.get(j));
+            values[i][j + 1] = new wchar_t[::wcslen(names[j + 1]) + 1];
+            centeringString(values[i][j + 1], ::wcslen(names[j + 1]) + 1, value);
+        }
+        nT = (*nT).next;
+        t = nT->getData().getData().getData();
+        number++;
+    }
+    return values;
+}
 
 template<typename T>
 void Table<T>::outputBottomOfTable(WINDOW *window, int y) {
@@ -160,6 +198,7 @@ void Table<T>::sidesScreen() {
 
 template<typename T>
 void Table<T>::initCurses() {
+    /*readListFromFile();*/
     initscr();
     cbreak();
     this->screen = stdscr;
@@ -186,8 +225,9 @@ void Table<T>::redrawScreen() {
     outputTopOfTable(search, 0);
     outputRow(sort, names, 0);
 
-    for (int i = 0; i < 22; i += 2) {
-        outputRow(table, fieldsSearch, i);
+    auto ***fieldsValues = getData(0);
+    for(int i = 0; i < 11; i++){
+        outputRow(table, fieldsValues[i], i * 2);
     }
     int y = getcury(table);
     outputBottomOfTable(table, y + 1);

@@ -1,8 +1,8 @@
 #include "cstring"
 #include "Person.h"
 
-Person::Person(const char *surname, char math, char rus, char en, char sex) {
-    strcpy(this->surname, surname);
+Person::Person(const wchar_t *surname, char math, char rus, char en, wchar_t sex) {
+    wcscpy(this->surname, surname);
     this->math = math;
     this->rus = rus;
     this->en = en;
@@ -10,36 +10,37 @@ Person::Person(const char *surname, char math, char rus, char en, char sex) {
 }
 
 
-char *Person::operator[](int index) {
+wchar_t *Person::operator[](int index) {
     return get(index);
 }
 
-char *Person::get(int index) {
+wchar_t *Person::get(int index) {
     switch (index) {
         case 0: {
             return this->surname;
         }
         case 1: {
-            static char str[4];
-            sprintf(str, "%d", this->math);
+            static wchar_t str[4];
+            ::swprintf(str, 4, L"%d", this->math);
+
             return str;
         }
         case 2: {
-            static char str[4];
-            sprintf(str, "%d", this->rus);
+            static wchar_t str[4];
+            ::swprintf(str, 4, L"%d", this->rus);
             return str;
         }
         case 3: {
-            static char str[4];
-            sprintf(str, "%d", this->en);
+            static wchar_t str[4];
+            ::swprintf(str, 4, L"%d", this->en);
             return str;
         }
         case 4: {
-            static char str[2];
+            static wchar_t str[2];
             if (this->sex.str == 0 || this->sex.str == 1) {
-                sprintf(str, "%d", this->sex.str);
+                ::swprintf(str,2, L"%d", this->sex.str);
             } else {
-                sprintf(str, "%c", this->sex.str);
+                ::swprintf(str,2, L"%lc", this->sex.str);
             }
             return str;
         }
@@ -49,19 +50,19 @@ char *Person::get(int index) {
     }
 }
 
-void Person::set(const char *str, int index) {
+void Person::set(const wchar_t *str, int index) {
     switch (index) {
         case 0: {
-            strncpy(this->surname, str, sizeof(this->surname));
+            ::wcsncpy(this->surname, str, sizeof(this->surname));
         }
         case 1: {
-            this->math = strtol(str, nullptr,10);
+            this->math = wcstol(str, nullptr,10);
         }
         case 2: {
-            this->rus = strtol(str, nullptr,10);
+            this->rus = wcstol(str, nullptr,10);
         }
         case 3: {
-            this->en = strtol(str, nullptr,10);
+            this->en = wcstol(str, nullptr,10);
         }
         case 4: {
             this->sex = str[0];
@@ -71,5 +72,7 @@ void Person::set(const char *str, int index) {
         }
     }
 }
+
+Person::Person(): Person(L"qwerty", 89,89,89,1) { }
 
 

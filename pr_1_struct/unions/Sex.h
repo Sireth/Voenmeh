@@ -1,15 +1,15 @@
 #ifndef TERM_2_SEX_H
 #define TERM_2_SEX_H
-
+#include "iostream"
 
 union Sex {
-    char str;
+    wchar_t str;
     char digit=0;
 
 public:
     Sex();
-    explicit Sex(char sex);
-    Sex& operator=(char sex);
+    explicit Sex(wchar_t sex);
+    Sex& operator=(wchar_t sex);
 };
 
 
