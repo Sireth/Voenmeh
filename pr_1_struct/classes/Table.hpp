@@ -1,9 +1,9 @@
-#ifndef TERM_2_TABLE_HPP
-#define TERM_2_TABLE_HPP
+#ifndef MAIN_CPP_TABLE_HPP
+#define MAIN_CPP_TABLE_HPP
 
 #include <fstream>
+
 #include "LinkedList.hpp"
-#include "../structs/Person.h"
 #include <iostream>
 #include <cstring>
 #include <clocale>
@@ -12,6 +12,8 @@
 #include <csignal>
 #include <ncurses.h>
 
+
+using namespace std;
 
 template<typename T>
 class Table {
@@ -29,7 +31,6 @@ public:
     LinkedList<Node<T>> rows;
     LinkedList<Node<Node<T>>> sortedRows;
     Node<Node<Node<T>>> *startOutput;
-    Node<Node<Node<T>>> *endOutput;
 
     WINDOW *screen;
     WINDOW *menu;
@@ -60,15 +61,65 @@ public:
 
     void choiceMenu();
 
-    void rowInTable(WINDOW *window, int y, int x);
+    void outputRow(WINDOW *window, wchar_t **values, int y);
+
+    void outputTopOfTable(WINDOW *window, int y);
+
+    void outputBottomOfTable(WINDOW *window, int y);
+
+    void outputTopOfRow(WINDOW *window, int y, int x);
 
     void splitNames();
 };
 
 template<typename T>
-void Table<T>::rowInTable(WINDOW *window, int y, int x) {
+void Table<T>::outputBottomOfTable(WINDOW *window, int y) {
+    wmove(window, y, 0);
+    wprintw(window, "%ls", L"└─");
+    for (int i = 0; i < countColumns; i++) {
+        for (int j = 0; j < ::wcslen(names[i]); j++) {
+            wprintw(window, "%ls", L"─");
+        }
+        if (i != countColumns - 1) {
+            wprintw(window, "%ls", L"─┴─");
+        }
+    }
+    wprintw(window, "%ls", L"─┘");
+}
+
+template<typename T>
+void Table<T>::outputTopOfTable(WINDOW *window, int y) {
+    wmove(window, y, 0);
+    wprintw(window, "%ls", L"┌─");
+    for (int i = 0; i < countColumns; i++) {
+        for (int j = 0; j < ::wcslen(names[i]); j++) {
+            wprintw(window, "%ls", L"─");
+        }
+        if (i != countColumns - 1) {
+            wprintw(window, "%ls", L"─┬─");
+        }
+    }
+    wprintw(window, "%ls", L"─┐");
+}
+
+template<typename T>
+void Table<T>::outputRow(WINDOW *window, wchar_t **values, int y) {
+    outputTopOfRow(window, y, 0);
+    wmove(window, y + 1, 0);
+    wprintw(window, "%ls", L"│ ");
+    for (int i = 0; i < countColumns; i++) {
+        wprintw(window, "%ls", values[i]);
+        if (i != countColumns - 1) {
+            wprintw(window, "%ls", L" │ ");
+        }
+    }
+    wprintw(window, "%ls", L" │");
+}
+
+template<typename T>
+void Table<T>::outputTopOfRow(WINDOW *window, int y, int x) {
     wmove(window, y, x);
-    wprintw(window, "%ls", L"├────────┼─");
+    wprintw(window, "%ls", L"├─");
     for (int i = 0; i < countColumns; i++) {
         for (int j = 0; j < ::wcslen(names[i]); j++) {
             wprintw(window, "%ls", L"─");
@@ -110,7 +161,8 @@ void Table<T>::sidesScreen() {
 template<typename T>
 void Table<T>::initCurses() {
     initscr();
-    this->screen = subwin(stdscr, 30,120,0,0);
+    cbreak();
+    this->screen = stdscr;
     this->menu = subwin(screen, 2, 120, 0, 0);
     this->search = subwin(screen, 2, 120, 2, 0);
     this->sort = subwin(screen, 2, 120, 4, 0);
@@ -121,46 +173,24 @@ void Table<T>::initCurses() {
 
 template<typename T>
 void Table<T>::redrawScreen() {
-    wprintw(search, "%ls", L"┌────────┬─");
+    auto **fieldsSearch = new wchar_t *[countColumns];
     for (int i = 0; i < countColumns; i++) {
-        for (int j = 0; j < ::wcslen(names[i]); j++) {
-            wprintw(search, "%ls", L"─");
-        }
-        if (i != countColumns - 1) {
-            wprintw(search, "%ls", L"─┬─");
+        int charLength = ::wcslen(names[i]);
+        fieldsSearch[i] = new wchar_t[charLength + 1];
+        for (int j = 0; j < charLength; j++) {
+            fieldsSearch[i][j] = L' ';
         }
     }
-    wprintw(search, "%ls", L"─┐");
 
+    outputRow(search, fieldsSearch, 0);
+    outputTopOfTable(search, 0);
+    outputRow(sort, names, 0);
 
-    wmove(search, 1, 0);
-    wprintw(search, "%ls", L"│        │ ");
-    for (int i = 0; i < countColumns; i++) {
-        for (int j = 0; j < ::wcslen(names[i]); j++) {
-            wprintw(search, "%ls", L" ");
-        }
-        if (i != countColumns - 1) {
-            wprintw(search, "%ls", L" │ ");
-        }
+    for (int i = 0; i < 22; i += 2) {
+        outputRow(table, fieldsSearch, i);
     }
-    wprintw(search, "%ls", L" │");
-
-
-    rowInTable(sort, 0, 0);
-
-
-    wmove(sort, 1, 0);
-    wprintw(sort, "%ls", L"│    №   │ ");
-    for (int i = 0; i < countColumns; i++) {
-        wprintw(sort, "%ls", names[i]);
-        if (i != countColumns - 1) {
-            wprintw(sort, "%ls", L" │ ");
-        }
-    }
-    wprintw(sort, "%ls", L" │");
-
-
-    rowInTable(table, 0, 0);
+    int y = getcury(table);
+    outputBottomOfTable(table, y + 1);
 
     box(menu, 0, 0);
     wrefresh(menu);
@@ -228,16 +258,17 @@ void Table<T>::splitNames() {
     wchar_t *lex, i = 0;
     wchar_t *ptr;
 
-    this->names = new wchar_t*[countColumns];
-
+    this->names = new wchar_t *[countColumns];
+    this->names[i] = new wchar_t[8];
+    ::wcscpy(this->names[i], L"   №   ");
+    i++;
     lex = std::wcstok(this->nameOfColumns, L":", &ptr);
 
-    while (lex != nullptr) {
-
+    while (lex != NULL) {
         this->names[i] = new wchar_t[::wcslen(lex) + 1];
         ::wcscpy(this->names[i], lex);
 
-        lex = std::wcstok(nullptr, L":", &ptr);
+        lex = std::wcstok(NULL, L":", &ptr);
         i++;
     }
 }
@@ -251,6 +282,7 @@ Table<T>::Table(const char *filename, const wchar_t *nameOfColumns, unsigned cha
     std::strcpy(this->filename, filename);
 
     countChars = ::wcslen(nameOfColumns) + 1;
+
     this->nameOfColumns = new wchar_t[countChars];
     std::wcscpy(this->nameOfColumns, nameOfColumns);
 
@@ -259,10 +291,10 @@ Table<T>::Table(const char *filename, const wchar_t *nameOfColumns, unsigned cha
     std::strcpy(this->types, types);
 
 
-    this->countColumns = countColumns;
+    this->countColumns = countColumns + 1;
     splitNames();
     initCurses();
 }
 
 
-#endif //TERM_2_TABLE_HPP
+#endif //MAIN_CPP_TABLE_HPP
