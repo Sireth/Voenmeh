@@ -1,0 +1,63 @@
+        -:    0:Source:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_struct/classes/Data.hpp
+        -:    0:Graph:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcno
+        -:    0:Data:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcda
+        -:    0:Runs:1
+        -:    1://
+        -:    2:// Created by sireth on 12.02.2023.
+        -:    3://
+        -:    4:
+        -:    5:#ifndef TERM_2_DATA_HPP
+        -:    6:#define TERM_2_DATA_HPP
+        -:    7:
+        -:    8:#include "../unions/DataUnion.hpp"
+        -:    9:
+        -:   10:template<typename T>
+        -:   11:class Data {
+        -:   12:private:
+        -:   13:    char _unionType;
+        -:   14:    DataUnion<T> data;
+        -:   15:public:
+        -:   16:    Data();
+        -:   17:
+        -:   18:    Data(T data);
+        -:   19:
+        -:   20:    Data(T *data);
+        -:   21:
+        -:   22:    T getData();
+        -:   23:};
+        -:   24:
+        -:   25:template<typename T>
+        -:   26:Data<T>::Data() {
+        -:   27:    _unionType = 0;
+        -:   28:    data = Data<T>(nullptr);
+        -:   29:}
+        -:   30:
+        -:   31:template<typename T>
+function _ZN4DataIiEC2Ei called 3 returned 100% blocks executed 100%
+        3:   32:Data<T>::Data(T data): data(data) {
+        3:   32-block  0
+call    0 returned 3
+        3:   33:    _unionType = 0;
+        3:   34:}
+        -:   35:
+        -:   36:template<typename T>
+function _ZN4DataIiEC2EPi called 1 returned 100% blocks executed 100%
+        1:   37:Data<T>::Data(T *data): data(data) {
+        1:   37-block  0
+call    0 returned 1
+        1:   38:    _unionType = 1;
+        1:   39:}
+        -:   40:
+        -:   41:template<typename T>
+function _ZN4DataIiE7getDataEv called 4 returned 100% blocks executed 100%
+        4:   42:T Data<T>::getData() {
+        4:   43:    if (_unionType) return *(data.ptrData);
+        4:   43-block  0
+branch  0 taken 1 (fallthrough)
+branch  1 taken 3
+        1:   43-block  1
+        3:   44:    return data.data;
+        3:   44-block  0
+        -:   45:}
+        -:   46:
+        -:   47:#endif //TERM_2_DATA_HPP

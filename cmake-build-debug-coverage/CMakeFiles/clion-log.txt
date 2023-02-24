@@ -1,0 +1,4 @@
+/home/sireth/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/222.4167.35/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/sireth/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/222.4167.35/bin/ninja/linux/ninja -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -G Ninja -S /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2 -B /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage

@@ -1,0 +1,19 @@
+        -:    0:Source:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_struct/structs/Person.cpp
+        -:    0:Graph:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/structs/Person.cpp.gcno
+        -:    0:Data:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/structs/Person.cpp.gcda
+        -:    0:Runs:1
+        -:    1:#include "cstring"
+        -:    2:#include "Person.h"
+        -:    3:
+        -:    4:
+function _ZN6PersonC2EPKccccc called 0 returned 0% blocks executed 0%
+    #####:    5:Person::Person(const char *surname, char math, char rus, char en, char sex) {
+    %%%%%:    5-block  0
+call    0 never executed
+    #####:    6:    strcpy(this->surname, surname);
+    #####:    7:    this->math = math;
+    #####:    8:    this->rus = rus;
+    #####:    9:    this->en = en;
+    #####:   10:    this->sex = Sex(sex);
+call    0 never executed
+    #####:   11:}

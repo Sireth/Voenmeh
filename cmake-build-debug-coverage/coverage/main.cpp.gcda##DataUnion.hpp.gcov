@@ -1,0 +1,32 @@
+        -:    0:Source:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_struct/unions/DataUnion.hpp
+        -:    0:Graph:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcno
+        -:    0:Data:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcda
+        -:    0:Runs:1
+        -:    1:#ifndef TERM_2_DATAUNION_HPP
+        -:    2:#define TERM_2_DATAUNION_HPP
+        -:    3:
+        -:    4:template<typename T>
+        -:    5:union DataUnion {
+        -:    6:public:
+        -:    7:    T data;
+        -:    8:    T *ptrData;
+        -:    9:
+        -:   10:    DataUnion(T data);
+        -:   11:
+        -:   12:    DataUnion(T *data);
+        -:   13:};
+        -:   14:
+        -:   15:template<typename T>
+function _ZN9DataUnionIiEC2Ei called 3 returned 100% blocks executed 100%
+        3:   16:DataUnion<T>::DataUnion(T data) {
+        3:   17:    this->data = data;
+        3:   18:}
+        -:   19:
+        -:   20:template<typename T>
+function _ZN9DataUnionIiEC2EPi called 1 returned 100% blocks executed 100%
+        1:   21:DataUnion<T>::DataUnion(T *data) {
+        1:   22:    this->ptrData = data;
+        1:   23:}
+        -:   24:
+        -:   25:
+        -:   26:#endif //TERM_2_DATAUNION_HPP

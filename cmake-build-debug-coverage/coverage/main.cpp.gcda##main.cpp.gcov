@@ -1,0 +1,95 @@
+        -:    0:Source:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_struct/main.cpp
+        -:    0:Graph:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcno
+        -:    0:Data:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcda
+        -:    0:Runs:1
+        -:    1:#include "make.h"
+        -:    2:#include "iostream"
+        -:    3:
+        -:    4:
+        -:    5:using namespace std;
+        -:    6:
+function main called 1 returned 100% blocks executed 74%
+        1:    7:int main() {
+        -:    8:
+        1:    9:    auto list = LinkedList<int>();
+        1:    9-block  0
+call    0 returned 1
+        1:   10:    auto list2 = StudentList();
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   11:    int a = 8;
+        1:   12:    int *ptr = &a;
+        1:   13:    list.pushBack(5);
+        1:   13-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   13-block  1
+call    3 returned 1
+branch  4 taken 1 (fallthrough)
+branch  5 taken 0 (throw)
+    $$$$$:   13-block  2
+        1:   14:    list.pushBack(4);
+        1:   14-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   14-block  1
+call    3 returned 1
+branch  4 taken 1 (fallthrough)
+branch  5 taken 0 (throw)
+    $$$$$:   14-block  2
+        1:   15:    list.pushBack(ptr);
+        1:   15-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   15-block  1
+call    3 returned 1
+branch  4 taken 1 (fallthrough)
+branch  5 taken 0 (throw)
+    $$$$$:   15-block  2
+        1:   16:    list.pushBack(a);
+        1:   16-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:   16-block  1
+call    3 returned 1
+branch  4 taken 1 (fallthrough)
+branch  5 taken 0 (throw)
+    $$$$$:   16-block  2
+        -:   17:
+        5:   18:    for(int i=0; i< list.len(); i++){
+        1:   18-block  0
+        4:   18-block  1
+        5:   18-block  2
+call    0 returned 5
+branch  1 taken 4
+branch  2 taken 1 (fallthrough)
+        4:   19:        cout << list[i]->data.getData() << endl;
+        4:   19-block  0
+call    0 returned 4
+branch  1 taken 4 (fallthrough)
+branch  2 taken 0 (throw)
+        4:   19-block  1
+call    3 returned 4
+call    4 returned 4
+branch  5 taken 4 (fallthrough)
+branch  6 taken 0 (throw)
+        4:   19-block  2
+call    7 returned 4
+branch  8 taken 4 (fallthrough)
+branch  9 taken 0 (throw)
+        -:   20:    }
+        -:   21:
+        1:   22:    return 0;
+        1:   23:}
+        1:   23-block  0
+call    0 returned 1
+call    1 returned 1
+    $$$$$:   23-block  1
+call    2 never executed
+    $$$$$:   23-block  2
+call    3 never executed

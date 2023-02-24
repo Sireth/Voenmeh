@@ -1,0 +1,324 @@
+        -:    0:Source:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_struct/classes/LinkedList.hpp
+        -:    0:Graph:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcno
+        -:    0:Data:/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage/CMakeFiles/pr_1_struct.dir/pr_1_struct/main.cpp.gcda
+        -:    0:Runs:1
+        -:    1:#ifndef TERM_2_LINKEDLIST_HPP
+        -:    2:#define TERM_2_LINKEDLIST_HPP
+        -:    3:
+        -:    4:#include "../structs/Node.hpp"
+        -:    5:#include "Data.hpp"
+        -:    6:
+        -:    7:
+        -:    8:template<typename T>
+        -:    9:class LinkedList {
+        -:   10:
+        -:   11:private:
+        -:   12:    Node<T> *head_, *tail_;
+        -:   13:    int length_;
+        -:   14:
+        -:   15:public:
+        -:   16:    LinkedList();
+        -:   17:
+        -:   18:    ~LinkedList();
+        -:   19:
+        -:   20:    Node<T> *pushFront(Data<T> data);
+        -:   21:
+        -:   22:    Node<T> *pushBack(Data<T> data);
+        -:   23:
+        -:   24:    void popFront();
+        -:   25:
+        -:   26:    void popBack();
+        -:   27:
+        -:   28:    Node<T> *getAt(int index);
+        -:   29:
+        -:   30:    Node<T> *insert(int index, Data<T> data);
+        -:   31:
+        -:   32:    void erase(int index);
+        -:   33:
+        -:   34:    int len();
+        -:   35:
+        -:   36:    Node<T> *operator[](int index);
+        -:   37:};
+        -:   38:
+        -:   39:template<typename T>
+        2:   40:LinkedList<T>::LinkedList() {
+        2:   41:    this->length_ = 0;
+        2:   42:    this->head_ = this->tail_ = nullptr;
+        2:   43:}
+------------------
+_ZN10LinkedListI6PersonEC2Ev:
+function _ZN10LinkedListI6PersonEC2Ev called 1 returned 100% blocks executed 100%
+        1:   40:LinkedList<T>::LinkedList() {
+        1:   41:    this->length_ = 0;
+        1:   42:    this->head_ = this->tail_ = nullptr;
+        1:   43:}
+------------------
+_ZN10LinkedListIiEC2Ev:
+function _ZN10LinkedListIiEC2Ev called 1 returned 100% blocks executed 100%
+        1:   40:LinkedList<T>::LinkedList() {
+        1:   41:    this->length_ = 0;
+        1:   42:    this->head_ = this->tail_ = nullptr;
+        1:   43:}
+------------------
+        -:   44:
+        -:   45:template<typename T>
+        2:   46:LinkedList<T>::~LinkedList() {
+        6:   47:    while (head_ != nullptr) {
+       4*:   48:        popFront();
+        -:   49:    }
+        2:   50:}
+------------------
+_ZN10LinkedListI6PersonED2Ev:
+function _ZN10LinkedListI6PersonED2Ev called 1 returned 100% blocks executed 75%
+        1:   46:LinkedList<T>::~LinkedList() {
+        1:   47:    while (head_ != nullptr) {
+        1:   47-block  0
+        1:   47-block  1
+branch  0 taken 0
+branch  1 taken 1 (fallthrough)
+    #####:   48:        popFront();
+    %%%%%:   48-block  0
+call    0 never executed
+        -:   49:    }
+        1:   50:}
+------------------
+_ZN10LinkedListIiED2Ev:
+function _ZN10LinkedListIiED2Ev called 1 returned 100% blocks executed 100%
+        1:   46:LinkedList<T>::~LinkedList() {
+        5:   47:    while (head_ != nullptr) {
+        1:   47-block  0
+        5:   47-block  1
+branch  0 taken 4
+branch  1 taken 1 (fallthrough)
+        4:   48:        popFront();
+        4:   48-block  0
+call    0 returned 4
+        -:   49:    }
+        1:   50:}
+------------------
+        -:   51:
+        -:   52:template<typename T>
+        -:   53:Node<T> *LinkedList<T>::pushFront(Data<T> data) {
+        -:   54:    auto *ptr = new Node<T>(data);
+        -:   55:    ptr->next = this->head_;
+        -:   56:    if (head_ != nullptr) {
+        -:   57:        head_->prev = ptr;
+        -:   58:    }
+        -:   59:    if (tail_ == nullptr) {
+        -:   60:        tail_ = ptr;
+        -:   61:    }
+        -:   62:    head_ = ptr;
+        -:   63:    length_++;
+        -:   64:    return ptr;
+        -:   65:}
+        -:   66:
+        -:   67:template<typename T>
+function _ZN10LinkedListIiE8pushBackE4DataIiE called 4 returned 100% blocks executed 100%
+        4:   68:Node<T> *LinkedList<T>::pushBack(Data<T> data) {
+        4:   69:    auto *ptr = new Node<T>(data);
+        4:   69-block  0
+call    0 returned 4
+branch  1 taken 4 (fallthrough)
+branch  2 taken 0 (throw)
+        4:   69-block  1
+call    3 returned 4
+        4:   70:    ptr->prev = this->tail_;
+        4:   71:    if (tail_ != nullptr) {
+branch  0 taken 3 (fallthrough)
+branch  1 taken 1
+        3:   72:        tail_->next = ptr;
+        3:   72-block  0
+        -:   73:    }
+        4:   74:    if (head_ == nullptr) {
+        4:   74-block  0
+branch  0 taken 1 (fallthrough)
+branch  1 taken 3
+        1:   75:        head_ = ptr;
+        1:   75-block  0
+        -:   76:    }
+        4:   77:    tail_ = ptr;
+        4:   78:    length_++;
+        4:   79:    return ptr;
+        4:   79-block  0
+        4:   79-block  1
+        -:   80:}
+        -:   81:
+        -:   82:template<typename T>
+       4*:   83:void LinkedList<T>::popFront() {
+       4*:   84:    if (head_ == nullptr) return;
+        -:   85:
+       4*:   86:    Node<T> *ptr = head_->next;
+       4*:   87:    if (ptr != nullptr) {
+       3*:   88:        ptr->prev = nullptr;
+        -:   89:    } else {
+       1*:   90:        tail_ = ptr;
+        -:   91:    }
+       4*:   92:    length_--;
+       4*:   93:    delete head_;
+       4*:   94:    head_ = ptr;
+        -:   95:}
+------------------
+_ZN10LinkedListI6PersonE8popFrontEv:
+function _ZN10LinkedListI6PersonE8popFrontEv called 0 returned 0% blocks executed 0%
+    #####:   83:void LinkedList<T>::popFront() {
+    #####:   84:    if (head_ == nullptr) return;
+    %%%%%:   84-block  0
+branch  0 never executed
+branch  1 never executed
+    %%%%%:   84-block  1
+        -:   85:
+    #####:   86:    Node<T> *ptr = head_->next;
+    #####:   87:    if (ptr != nullptr) {
+    %%%%%:   87-block  0
+branch  0 never executed
+branch  1 never executed
+    #####:   88:        ptr->prev = nullptr;
+    %%%%%:   88-block  0
+        -:   89:    } else {
+    #####:   90:        tail_ = ptr;
+    %%%%%:   90-block  0
+        -:   91:    }
+    #####:   92:    length_--;
+    #####:   93:    delete head_;
+    %%%%%:   93-block  0
+branch  0 never executed
+branch  1 never executed
+    %%%%%:   93-block  1
+call    2 never executed
+    #####:   94:    head_ = ptr;
+    %%%%%:   94-block  0
+        -:   95:}
+------------------
+_ZN10LinkedListIiE8popFrontEv:
+function _ZN10LinkedListIiE8popFrontEv called 4 returned 100% blocks executed 89%
+        4:   83:void LinkedList<T>::popFront() {
+       4*:   84:    if (head_ == nullptr) return;
+        4:   84-block  0
+branch  0 taken 0 (fallthrough)
+branch  1 taken 4
+    %%%%%:   84-block  1
+        -:   85:
+        4:   86:    Node<T> *ptr = head_->next;
+        4:   87:    if (ptr != nullptr) {
+        4:   87-block  0
+branch  0 taken 3 (fallthrough)
+branch  1 taken 1
+        3:   88:        ptr->prev = nullptr;
+        3:   88-block  0
+        -:   89:    } else {
+        1:   90:        tail_ = ptr;
+        1:   90-block  0
+        -:   91:    }
+        4:   92:    length_--;
+        4:   93:    delete head_;
+        4:   93-block  0
+branch  0 taken 4 (fallthrough)
+branch  1 taken 0
+        4:   93-block  1
+call    2 returned 4
+        4:   94:    head_ = ptr;
+        4:   94-block  0
+        -:   95:}
+------------------
+        -:   96:
+        -:   97:template<typename T>
+        -:   98:void LinkedList<T>::popBack() {
+        -:   99:    if (tail_ == nullptr) return;
+        -:  100:
+        -:  101:    Node<T> *ptr = tail_->prev;
+        -:  102:    if (ptr != nullptr) {
+        -:  103:        ptr->next = nullptr;
+        -:  104:    } else {
+        -:  105:        head_ = ptr;
+        -:  106:    }
+        -:  107:    length_--;
+        -:  108:    delete tail_;
+        -:  109:    tail_ = ptr;
+        -:  110:}
+        -:  111:
+        -:  112:template<typename T>
+function _ZN10LinkedListIiE5getAtEi called 4 returned 100% blocks executed 80%
+        4:  113:Node<T> *LinkedList<T>::getAt(int index) {
+        4:  114:    Node<T> *ptr = head_;
+       4*:  115:    if (index == len()) return tail_;
+        4:  115-block  0
+call    0 returned 4
+branch  1 taken 0 (fallthrough)
+branch  2 taken 4
+    %%%%%:  115-block  1
+        4:  116:    int i = 0;
+        -:  117:
+       10:  118:    while (i != index) {
+        4:  118-block  0
+       10:  118-block  1
+branch  0 taken 6
+branch  1 taken 4 (fallthrough)
+       6*:  119:        if (ptr == nullptr) return ptr;
+        6:  119-block  0
+branch  0 taken 0 (fallthrough)
+branch  1 taken 6
+    %%%%%:  119-block  1
+        6:  120:        ptr = ptr->next;
+        6:  121:        i++;
+        6:  121-block  0
+        -:  122:    }
+        -:  123:
+        4:  124:    return ptr;
+        4:  124-block  0
+        -:  125:}
+        -:  126:
+        -:  127:template<typename T>
+        -:  128:Node<T> *LinkedList<T>::insert(int index, Data<T> data) {
+        -:  129:    Node<T> *right = getAt(index);
+        -:  130:    if (right == nullptr) return pushBack(data);
+        -:  131:
+        -:  132:    Node<T> *left = right->prev;
+        -:  133:    if (left == nullptr) return pushFront(data);
+        -:  134:
+        -:  135:    auto *ptr = new Node<T>(data);
+        -:  136:
+        -:  137:    ptr->prev = left;
+        -:  138:    ptr->next = right;
+        -:  139:    left->next = ptr;
+        -:  140:    right->prev = ptr;
+        -:  141:    length_++;
+        -:  142:    return ptr;
+        -:  143:}
+        -:  144:
+        -:  145:template<typename T>
+function _ZN10LinkedListIiEixEi called 4 returned 100% blocks executed 100%
+        4:  146:Node<T> *LinkedList<T>::operator[](int index) {
+        4:  147:    return getAt(index);
+        4:  147-block  0
+call    0 returned 4
+        -:  148:}
+        -:  149:
+        -:  150:template<typename T>
+        -:  151:void LinkedList<T>::erase(int index) {
+        -:  152:    Node<T> *ptr = getAt(index);
+        -:  153:    if (ptr == nullptr) return;
+        -:  154:
+        -:  155:    if (ptr->prev == nullptr)
+        -:  156:        popFront();
+        -:  157:    else if (ptr->next == nullptr)
+        -:  158:        popBack();
+        -:  159:    else {
+        -:  160:        Node<T> *left = ptr->prev;
+        -:  161:        Node<T> *right = ptr->next;
+        -:  162:
+        -:  163:        left->next = right;
+        -:  164:        right->prev = left;
+        -:  165:        length_--;
+        -:  166:        delete ptr;
+        -:  167:    }
+        -:  168:}
+        -:  169:
+        -:  170:template<typename T>
+function _ZN10LinkedListIiE3lenEv called 9 returned 100% blocks executed 100%
+        9:  171:int LinkedList<T>::len() {
+        9:  172:    return length_;
+        9:  172-block  0
+        -:  173:}
+        -:  174:
+        -:  175:
+        -:  176:#endif //TERM_2_LINKEDLIST_HPP
