@@ -397,7 +397,7 @@ void Table<T>::selectSearch(int index) {
                 outputTopOfTable(wSearch, 0);
                 wrefresh(wSearch);
 
-                for(int i = 0; i <countColumns; i++){
+                for (int i = 0; i < countColumns; i++) {
                     delete[] fieldsSearch[i];
                     fieldsSearch[i] = nullptr;
                 }
@@ -412,7 +412,7 @@ void Table<T>::selectSearch(int index) {
                 outputTopOfTable(wSearch, 0);
                 wrefresh(wSearch);
 
-                for(int i = 0; i <countColumns; i++){
+                for (int i = 0; i < countColumns; i++) {
                     delete[] fieldsSearch[i];
                     fieldsSearch[i] = nullptr;
                 }
@@ -460,7 +460,7 @@ void Table<T>::selectSearch(int index) {
     outputTopOfTable(wSearch, 0);
     wrefresh(wSearch);
 
-    for(int i = 0; i <countColumns; i++){
+    for (int i = 0; i < countColumns; i++) {
         delete[] fieldsSearch[i];
         fieldsSearch = nullptr;
     }
@@ -475,12 +475,12 @@ template<typename T>
 void Table<T>::search(int index, wchar_t *data) {
     Node<Node<T>> *element = rows[0];
     searchedRows.eraseAll();
-    int lengthOfStr = ::wcslen(names[index+1]);
+    int lengthOfStr = ::wcslen(names[index + 1]);
     /*data[lengthOfStr + 1] = 0;*/
     sortedRows.eraseAll();
     while (element != nullptr) {
         T t = element->getData().getData();
-        auto *ptr = new wchar_t [lengthOfStr+1];
+        auto *ptr = new wchar_t[lengthOfStr + 1];
         t.get(ptr, index);
         if (::wcsstr(ptr, data) != nullptr) {
             sortedRows.pushBack(searchedRows.pushBack(element));
@@ -531,10 +531,10 @@ Table<T>::merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *righ
     }
     Node<Node<Node<Node<T>>>> *result = NULL;
     Node<Node<Node<Node<T>>>> *cur = NULL;
-    int lengthOfStr = ::wcslen(names[index+1]);
-    auto * str = new wchar_t [lengthOfStr+1];
+    int lengthOfStr = ::wcslen(names[index + 1]);
+    auto *str = new wchar_t[lengthOfStr + 1];
     right->getData().getData().getData().getData().get(str, index);
-    char ptr = left->getData().getData().getData().getData().comparison(index,str) * direction;
+    char ptr = left->getData().getData().getData().getData().comparison(index, str) * direction;
 
     delete[] str;
     str = nullptr;
@@ -548,9 +548,9 @@ Table<T>::merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *righ
     }
     cur = result;
     while (left != NULL && right != NULL) {
-        str = new wchar_t [lengthOfStr+1];
+        str = new wchar_t[lengthOfStr + 1];
         right->getData().getData().getData().getData().get(str, index);
-        ptr = left->getData().getData().getData().getData().comparison(index,  str)* direction;
+        ptr = left->getData().getData().getData().getData().comparison(index, str) * direction;
 
         delete[] str;
         str = nullptr;
@@ -914,7 +914,7 @@ void Table<T>::redrawScreen() {
 
     for (int i = 0; i < 11; i++) {
         outputRow(wTable, fieldsValues[i], i * 2, 99);
-        for (int j =0; j < countColumns; j++){
+        for (int j = 0; j < countColumns; j++) {
             delete[] fieldsValues[i][j];
             fieldsValues[i][j] = nullptr;
         }
