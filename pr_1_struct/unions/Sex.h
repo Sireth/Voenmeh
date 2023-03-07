@@ -4,7 +4,7 @@
 
 union Sex {
     wchar_t str;
-    char digit=0;
+    char digit=1; // 1 - m, 0 - f
 
 public:
     Sex();

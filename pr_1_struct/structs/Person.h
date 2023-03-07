@@ -19,13 +19,11 @@ struct Person {
 
     Person();
 
-    wchar_t *get(int index);
+    void get(wchar_t *dest, int index);
 
     void set(const wchar_t *str, int index);
 
-
-    wchar_t *operator[] (int index);
-
+    int comparison(int index, wchar_t *data);
 };
 
 

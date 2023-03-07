@@ -8,38 +8,61 @@
 #include <cstring>
 #include <clocale>
 #include <regex>
-#include <termios.h>
 #include <csignal>
 #include <ncurses.h>
+
+/*#define KEY_UP 65
+#define KEY_DOWN 66
+#define KEY_RIGHT 67
+#define KEY_LEFT 68
+#define KEY_ENTER 10
+#define KEY_TAB 9*/
+#define KEY_ESC 27
 
 
 using namespace std;
 
 template<typename T>
 class Table {
+
 public:
     unsigned char countColumns;
     const unsigned char outputLength = 20;
+    int startScreenFlag = 0;
 
     char *filename;
     char *types;
     wchar_t *nameOfColumns;
     wchar_t **names;
-    const wchar_t *menuNames[3] = {L"Добавление элемента", L"Удаление элемента", L"Выход"};
+    const wchar_t *menuNames[4] = {L"Добавление элемента", L"Сохранить файл", L"Помощь", L"Выход"};
 
     LinkedList<T> list;
     LinkedList<Node<T>> rows;
-    LinkedList<Node<Node<T>>> sortedRows;
-    Node<Node<Node<T>>> *startOutput;
+    LinkedList<Node<Node<T>>> searchedRows;
+    LinkedList<Node<Node<Node<T>>>> sortedRows;
+    Node<Node<Node<Node<T>>>> *startOutput;
+    Node<Node<Node<Node<T>>>> *endOutput;
 
-    WINDOW *screen;
-    WINDOW *menu;
-    WINDOW *search;
-    WINDOW *sort;
-    WINDOW *table;
 
+    WINDOW *wScreen;
+    WINDOW *wMenu;
+    WINDOW *wSearch;
+    WINDOW *wSort;
+    WINDOW *wTable;
+private:
+    long long number;
+
+public:
 
     Table(const char *filename, const wchar_t *nameOfColumns, unsigned char countColumns, const char *types);
+
+    void selectSearch(int index);
+
+    void selectMenu();
+
+    void selectSort(int index);
+
+    void selectTable();
 
     void initCurses();
 
@@ -47,21 +70,13 @@ public:
 
     void redrawScreen();
 
-    void selectMenu();
-
-    void selectSearch();
-
-    void selectSort();
-
-    void selectTable();
-
-    void finitCurses();
-
     int readListFromFile();
 
-    void choiceMenu();
+    void redrawTable();
 
-    void outputRow(WINDOW *window, wchar_t **values, int y);
+    void outputMenu(int highlight);
+
+    void outputRow(WINDOW *window, wchar_t **values, int y, int highlight);
 
     void outputTopOfTable(WINDOW *window, int y);
 
@@ -71,42 +86,682 @@ public:
 
     void splitNames();
 
-    wchar_t ***getData(int index);
+    wchar_t ***getData();
+
+    wchar_t ***getDataByIndex(int index);
+
+    wchar_t ***getDataNext();
+
+    wchar_t ***getDataPrev();
 
     void centeringString(wchar_t *dest, int sizeOfDest, const wchar_t *value);
 
+    void search(int index, wchar_t *data);
+
+    void sort(int index, char direction);
+
+private:
+
+    void mergeSort(Node<Node<Node<Node<T>>>> **head, int index, char direction);
+
+    void split(Node<Node<Node<Node<T>>>> *head, Node<Node<Node<Node<T>>>> **left, Node<Node<Node<Node<T>>>> **right);
+
+    Node<Node<Node<Node<T>>>> *
+    merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *right, int index, char direction);
 };
 
 template<typename T>
-void Table<T>::centeringString(wchar_t *dest, int sizeOfDest, const wchar_t *value) {
-    wchar_t *str = new wchar_t[sizeOfDest + 1];
-    int len = wcslen(value);
-    int padding = (sizeOfDest - len) / 2;
-    ::swprintf(str, sizeOfDest, L"%*s%ls%*s", padding, "", value, sizeOfDest - padding - len, "");
-    ::wcscpy(dest, str);
+wchar_t ***Table<T>::getData() {
+    if (startOutput == nullptr) return getDataByIndex(0);
+    auto *value = new wchar_t[::wcslen(names[0]) + 1];
+    auto ***values = new wchar_t **[11];
+    Node<Node<Node<Node<T>>>> *nT;
+    nT = startOutput;
+    T t;
+    if (nT != nullptr)
+        t = nT->getData().getData().getData().getData();
+
+    for (int i = 0; i < 11; i++) {
+        values[i] = new wchar_t *[countColumns];
+        values[i][0] = new wchar_t[::wcslen(names[0]) + 1];
+
+        ::swprintf(value, ::wcslen(names[0]) + 1, L"%d", number);
+        centeringString(values[i][0], ::wcslen(names[0]) + 1, value);
+
+        for (int j = 0; j < countColumns - 1; j++) {
+            delete[] value;
+            int lengthOfStr = ::wcslen(names[j + 1]);
+            value = new wchar_t[lengthOfStr + 1];
+            if (nT != nullptr) {
+                auto *ptr = new wchar_t[lengthOfStr + 1];
+                t.get(ptr, j);
+                ::wcsncpy(value, ptr, lengthOfStr + 1);
+                delete[] ptr;
+                ptr = nullptr;
+            } else
+                ::swprintf(value, lengthOfStr + 1, L"—");
+
+            values[i][j + 1] = new wchar_t[lengthOfStr + 1];
+            centeringString(values[i][j + 1], lengthOfStr + 1, value);
+        }
+        if (nT != nullptr)
+            nT = (*nT).next;
+
+        if (nT != nullptr && i != 10) {
+            t = nT->getData().getData().getData().getData();
+            endOutput = nT;
+        }
+        number++;
+    }
+    delete[] value;
+    value = nullptr;
+    number -= 11;
+    return values;
 }
 
 template<typename T>
-wchar_t ***Table<T>::getData(int index) {
-    int number = index + 1;
-    wchar_t *value = new wchar_t[::wcslen(names[0]) + 1];
-    wchar_t ***values = new wchar_t **[11];
-    Node<Node<Node<T>>> *nT = startOutput = sortedRows[index];
-    T t = nT->getData().getData().getData();
-    for(int i = 0; i < 11; i++){
+void Table<T>::selectTable() {
+    curs_set(1);
+    wmove(wTable, 1, 1);
+    wrefresh(wTable);
+    wchar_t ***fieldsValues = getData();
+    int c, currentRow = 0;
+    while ((c = getch()) != 9) {
+        switch (c) {
+            case KEY_UP: {
+                currentRow--;
+                if (currentRow < 0) {
+                    currentRow = 0;
+                    fieldsValues = getDataPrev();
+                }
+                break;
+            }
+            case KEY_DOWN: {
+                currentRow++;
+                if (currentRow > 10) {
+                    currentRow = 10;
+                    fieldsValues = getDataNext();
+                }
+                break;
+            }
+            case 10: {
+
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        wmove(wTable, 0, 0);
+        for (int i = 0; i < 11; i++) {
+            outputRow(wTable, fieldsValues[i], i * 2, 99);
+        }
+        int y = getcury(wTable);
+        outputBottomOfTable(wTable, y + 1);
+        wmove(wTable, currentRow * 2 + 1, 1);
+        wrefresh(wTable);
+    }
+    curs_set(0);
+    return selectSort(0);
+}
+
+template<typename T>
+void Table<T>::selectSort(int index) {
+    outputRow(wSort, names, 0, index + 1);
+    wrefresh(wSort);
+    int c, choice = index + 1;
+    bool sortFlag = false;
+    noecho();
+    while ((c = getch()) != 9) {
+        switch (c) {
+            case KEY_RIGHT: {
+                choice++;
+                if (choice > countColumns - 1) choice = countColumns - 1;
+                break;
+            }
+            case KEY_LEFT: {
+                choice--;
+                if (choice < 1) choice = 1;
+                break;
+            }
+            case 10: {
+                sortFlag = !sortFlag;
+                if (!sortFlag) {
+                    sort(choice - 1, 1);
+                    redrawTable();
+                    wrefresh(wTable);
+                } else {
+                    sort(choice - 1, -1);
+                    redrawTable();
+                    wrefresh(wTable);
+                }
+                break;
+            }
+            case KEY_UP: {
+                outputRow(wSort, names, 0, 99);
+                wrefresh(wSort);
+                return selectSearch(choice - 1);
+            }
+            default: {
+                break;
+            }
+        }
+        wmove(wSort, 0, 0);
+        outputRow(wSort, names, 0, choice);
+        outputTopOfTable(wSearch, 0);
+        wrefresh(wSort);
+    }
+    outputRow(wSort, names, 0, 99);
+    wrefresh(wSort);
+    return selectTable();
+}
+
+template<typename T>
+void Table<T>::outputMenu(int highlight) {
+    wmove(wMenu, 0, 0);
+    int x = 0;
+    for (int i = 0; i < 4; i++) {
+        if (i == highlight) {
+            wattr_on(wMenu, A_REVERSE, nullptr);
+        }
+        wprintw(wMenu, "%ls", menuNames[i]);
+        wattr_off(wMenu, A_REVERSE, nullptr);
+        x += ::wcslen(menuNames[i]) + 4;
+        wmove(wMenu, 0, x);
+    }
+    wrefresh(wMenu);
+}
+
+template<typename T>
+void Table<T>::selectMenu() {
+    noecho();
+    outputMenu(0);
+    int c, choice = 0;
+    while ((c = getch()) != 9) {
+        switch (c) {
+            case KEY_RIGHT: {
+                choice++;
+                if (choice > 3) choice = 3;
+                break;
+            }
+            case KEY_LEFT: {
+                choice--;
+                if (choice < 0) choice = 0;
+                break;
+            }
+            case 10: {
+                switch (choice) {
+                    case 2: {
+                        clear();
+                        WINDOW *wHelp = subwin(stdscr, 30, 120, 0, 0);
+                        box(wHelp, 0, 0);
+                        wrefresh(wHelp);
+                        getch();
+                        clear();
+                        delwin(wHelp);
+                        return redrawScreen();
+                    }
+                    case 3: {
+                        clear();
+                        delwin(wMenu);
+                        delwin(wSearch);
+                        delwin(wSort);
+                        delwin(wTable);
+                        delwin(wScreen);
+                        delwin(stdscr);
+                        ::exit(1);
+                    }
+                    default: {
+                        break;
+                    }
+                }
+                break;
+            }
+            case KEY_DOWN: {
+                outputMenu(99);
+                return selectSearch(0);
+            }
+            default: {
+                break;
+            }
+        }
+        outputMenu(choice);
+        wrefresh(wMenu);
+    }
+    outputMenu(99);
+    return selectTable();
+
+}
+
+template<typename T>
+void Table<T>::redrawTable() {
+    wmove(wTable, 0, 0);
+    auto ***fieldsValues = getDataByIndex(0);
+    for (int i = 0; i < 11; i++) {
+        outputRow(wTable, fieldsValues[i], i * 2, 99);
+    }
+    int y = getcury(wTable);
+    outputBottomOfTable(wTable, y + 1);
+    wrefresh(wTable);
+    delete fieldsValues;
+}
+
+template<typename T>
+void Table<T>::selectSearch(int index) {
+    auto **fieldsSearch = new wchar_t *[countColumns];
+    for (int i = 0; i < countColumns; i++) {
+        int charLength = ::wcslen(names[i]);
+        fieldsSearch[i] = new wchar_t[charLength + 1];
+    }
+    int c = 0, choice = index, findIndex = 99;
+    bool writeFlag = false;
+    noecho();
+    wchar_t *str = nullptr;
+    int countOfSymbols = 0;
+    do {
+        switch (c) {
+            case KEY_RIGHT: {
+                if (!writeFlag) {
+                    choice++;
+                    if (choice > countColumns - 2) choice = countColumns - 2;
+                }
+                break;
+            }
+            case KEY_LEFT: {
+                if (!writeFlag) {
+                    choice--;
+                    if (choice < 0) choice = 0;
+                }
+                break;
+            }
+            case 10: {
+                writeFlag = !writeFlag;
+                if (writeFlag) {
+                    countOfSymbols = 0;
+
+                    delete[] str;
+
+                    str = new wchar_t[::wcslen(names[choice + 1]) + 1];
+                    for (int i = 0; i < ::wcslen(names[choice + 1]); i++) str[i] = L' ';
+                    str[::wcslen(names[choice + 1])] = 0;
+                    findIndex = choice;
+                } else {
+                    str[countOfSymbols] = 0;
+                    search(findIndex, str);
+                    redrawTable();
+                }
+                break;
+            }
+            case KEY_UP: {
+                outputRow(wSearch, fieldsSearch, 0, 99);
+                outputTopOfTable(wSearch, 0);
+                wrefresh(wSearch);
+
+                for(int i = 0; i <countColumns; i++){
+                    delete[] fieldsSearch[i];
+                    fieldsSearch[i] = nullptr;
+                }
+                delete[] fieldsSearch;
+                delete[] str;
+                str = nullptr;
+
+                return selectMenu();
+            }
+            case KEY_DOWN: {
+                outputRow(wSearch, fieldsSearch, 0, 99);
+                outputTopOfTable(wSearch, 0);
+                wrefresh(wSearch);
+
+                for(int i = 0; i <countColumns; i++){
+                    delete[] fieldsSearch[i];
+                    fieldsSearch[i] = nullptr;
+                }
+                delete[] fieldsSearch;
+                delete[] str;
+                str = nullptr;
+
+                return selectSort(choice);
+            }
+            default: {
+                if (writeFlag && (countOfSymbols) < (::wcslen(names[choice + 1]) - 1) && c > 44 && c < 176) {
+                    str[countOfSymbols] = c;
+                    countOfSymbols++;
+                    str[::wcslen(names[choice + 1])] = 0;
+                }
+                break;
+            }
+        }
+        for (int i = 0; i < countColumns; i++) {
+            int charLength = ::wcslen(names[i]);
+            if (writeFlag || (i != (findIndex + 1))) {
+                for (int j = 0; j < charLength; j++) {
+                    fieldsSearch[i][j] = L' ';
+                    if ((findIndex + 1) == i) {
+                        fieldsSearch[i][j] = str[j];
+                    }
+                }
+            }
+            if (i == 0) {
+                auto *ptr = new wchar_t[charLength + 1];
+                swprintf(ptr, charLength + 1, L"%d", searchedRows.len());
+                centeringString(fieldsSearch[i], charLength + 1, ptr);
+                delete[] ptr;
+                ptr = nullptr;
+            }
+            fieldsSearch[i][charLength] = L'\000';
+        }
+
+        wmove(wSearch, 0, 0);
+        outputRow(wSearch, fieldsSearch, 0, choice + 1);
+        outputTopOfTable(wSearch, 0);
+        wrefresh(wSearch);
+    } while ((c = getch()) != 9);
+    outputRow(wSearch, fieldsSearch, 0, 99);
+    outputTopOfTable(wSearch, 0);
+    wrefresh(wSearch);
+
+    for(int i = 0; i <countColumns; i++){
+        delete[] fieldsSearch[i];
+        fieldsSearch = nullptr;
+    }
+    delete[] fieldsSearch;
+    delete[] str;
+    str = nullptr;
+
+    return selectTable();
+}
+
+template<typename T>
+void Table<T>::search(int index, wchar_t *data) {
+    Node<Node<T>> *element = rows[0];
+    searchedRows.eraseAll();
+    int lengthOfStr = ::wcslen(names[index+1]);
+    /*data[lengthOfStr + 1] = 0;*/
+    sortedRows.eraseAll();
+    while (element != nullptr) {
+        T t = element->getData().getData();
+        auto *ptr = new wchar_t [lengthOfStr+1];
+        t.get(ptr, index);
+        if (::wcsstr(ptr, data) != nullptr) {
+            sortedRows.pushBack(searchedRows.pushBack(element));
+        }
+        delete[] ptr;
+        ptr = nullptr;
+        element = element->next;
+    }
+}
+
+template<typename T>
+void Table<T>::sort(int index, char direction) {
+    Node<Node<Node<Node<T>>>> *head = sortedRows.getHead();
+    if (head != nullptr) {
+        mergeSort(&head, index, direction);
+        sortedRows.resetList(head);
+    }
+}
+
+template<typename T>
+void
+Table<T>::split(Node<Node<Node<Node<T>>>> *head, Node<Node<Node<Node<T>>>> **left, Node<Node<Node<Node<T>>>> **right) {
+    Node<Node<Node<Node<T>>>> *slow = head;
+    Node<Node<Node<Node<T>>>> *fast = head->next;
+    while (fast != NULL) {
+        fast = fast->next;
+        if (fast != NULL) {
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
+    *left = head;
+    *right = slow->next;
+    slow->next = NULL;
+    (*right)->prev = NULL;
+}
+
+
+template<typename T>
+// Слияние двух отсортированных списков
+Node<Node<Node<Node<T>>>> *
+Table<T>::merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *right, int index, char direction) {
+    if (left == NULL) {
+        return right;
+    }
+    if (right == NULL) {
+        return left;
+    }
+    Node<Node<Node<Node<T>>>> *result = NULL;
+    Node<Node<Node<Node<T>>>> *cur = NULL;
+    int lengthOfStr = ::wcslen(names[index+1]);
+    auto * str = new wchar_t [lengthOfStr+1];
+    right->getData().getData().getData().getData().get(str, index);
+    char ptr = left->getData().getData().getData().getData().comparison(index,str) * direction;
+
+    delete[] str;
+    str = nullptr;
+
+    if (ptr <= 0) {
+        result = left;
+        left = left->next;
+    } else {
+        result = right;
+        right = right->next;
+    }
+    cur = result;
+    while (left != NULL && right != NULL) {
+        str = new wchar_t [lengthOfStr+1];
+        right->getData().getData().getData().getData().get(str, index);
+        ptr = left->getData().getData().getData().getData().comparison(index,  str)* direction;
+
+        delete[] str;
+        str = nullptr;
+
+        if (ptr <= 0) {
+            cur->next = left;
+            left->prev = cur;
+            left = left->next;
+        } else {
+            cur->next = right;
+            right->prev = cur;
+            right = right->next;
+        }
+        cur = cur->next;
+    }
+    if (left != NULL) {
+        cur->next = left;
+        left->prev = cur;
+    }
+    if (right != NULL) {
+        cur->next = right;
+        right->prev = cur;
+    }
+    return result;
+}
+
+
+template<typename T>
+// Сортировка слиянием
+void Table<T>::mergeSort(Node<Node<Node<Node<T>>>> **head, int index, char direction) {
+    Node<Node<Node<Node<T>>>> *cur = *head;
+    Node<Node<Node<Node<T>>>> *left = NULL;
+    Node<Node<Node<Node<T>>>> *right = NULL;
+    if (cur == NULL || cur->next == NULL) {
+        return;
+    }
+    split(cur, &left, &right);
+    mergeSort(&left, index, direction);
+    mergeSort(&right, index, direction);
+    *head = merge(left, right, index, direction);
+}
+
+template<typename T>
+void Table<T>::centeringString(wchar_t *dest, int sizeOfDest, const wchar_t *value) {
+    auto *str = new wchar_t[sizeOfDest + 1];
+    int len = wcslen(value);
+    int padding = (sizeOfDest - len) / 2;
+    ::swprintf(str, sizeOfDest, L"%*s%ls%*s", padding, "", value, sizeOfDest - padding - len, "");
+    ::wcsncpy(dest, str, sizeOfDest - 1);
+    dest[sizeOfDest - 1] = 0;
+    delete[] str;
+    str = nullptr;
+}
+
+template<typename T>
+wchar_t ***Table<T>::getDataNext() {
+    auto *value = new wchar_t[::wcslen(names[0]) + 1];
+    auto ***values = new wchar_t **[11];
+    Node<Node<Node<Node<T>>>> *nT;
+    if (endOutput->next != nullptr && startOutput != nullptr) {
+        nT = startOutput->next;
+        startOutput = nT;
+        number += 1;
+    } else
+        nT = startOutput;
+
+    T t;
+    if (nT != nullptr)
+        t = nT->getData().getData().getData().getData();
+
+    for (int i = 0; i < 11; i++) {
         values[i] = new wchar_t *[countColumns];
         values[i][0] = new wchar_t[::wcslen(names[0]) + 1];
+
         ::swprintf(value, ::wcslen(names[0]) + 1, L"%d", number);
-        centeringString(values[i][0], ::wcslen(names[0])+1, value);
-        for(int j = 0; j < countColumns - 1; j++){
-            ::wcscpy(value, t.get(j));
-            values[i][j + 1] = new wchar_t[::wcslen(names[j + 1]) + 1];
-            centeringString(values[i][j + 1], ::wcslen(names[j + 1]) + 1, value);
+        centeringString(values[i][0], ::wcslen(names[0]) + 1, value);
+
+        for (int j = 0; j < countColumns - 1; j++) {
+            delete[] value;
+            int lengthOfStr = ::wcslen(names[j + 1]);
+            value = new wchar_t[lengthOfStr + 1];
+            if (nT != nullptr) {
+                auto *ptr = new wchar_t[lengthOfStr + 1];
+                t.get(ptr, j);
+                ::wcsncpy(value, ptr, lengthOfStr + 1);
+                delete[] ptr;
+                ptr = nullptr;
+            } else
+                ::swprintf(value, lengthOfStr + 1, L"—");
+
+            values[i][j + 1] = new wchar_t[lengthOfStr + 1];
+            centeringString(values[i][j + 1], lengthOfStr + 1, value);
         }
-        nT = (*nT).next;
-        t = nT->getData().getData().getData();
+        if (nT != nullptr)
+            nT = (*nT).next;
+
+        if (nT != nullptr && i != 10) {
+            t = nT->getData().getData().getData().getData();
+            endOutput = nT;
+        }
+
         number++;
     }
+    delete[] value;
+    value = nullptr;
+    number -= 11;
+    return values;
+}
+
+template<typename T>
+wchar_t ***Table<T>::getDataPrev() {
+
+    auto *value = new wchar_t[::wcslen(names[0]) + 1];
+    auto ***values = new wchar_t **[11];
+    Node<Node<Node<Node<T>>>> *nT;
+    if (startOutput != nullptr && startOutput->prev != nullptr) {
+        nT = startOutput->prev;
+        startOutput = nT;
+        number -= 1;
+    } else
+        nT = startOutput;
+
+    T t;
+    if (nT != nullptr)
+        t = nT->getData().getData().getData().getData();
+
+    for (int i = 0; i < 11; i++) {
+        values[i] = new wchar_t *[countColumns];
+        values[i][0] = new wchar_t[::wcslen(names[0]) + 1];
+
+        ::swprintf(value, ::wcslen(names[0]) + 1, L"%d", number);
+        centeringString(values[i][0], ::wcslen(names[0]) + 1, value);
+
+        for (int j = 0; j < countColumns - 1; j++) {
+            delete[] value;
+            int lengthOfStr = ::wcslen(names[j + 1]);
+            value = new wchar_t[lengthOfStr + 1];
+            if (nT != nullptr) {
+                auto *ptr = new wchar_t[lengthOfStr + 1];
+                t.get(ptr, j);
+                ::wcsncpy(value, ptr, lengthOfStr + 1);
+                delete[] ptr;
+                ptr = nullptr;
+            } else
+                ::swprintf(value, lengthOfStr + 1, L"—");
+
+            values[i][j + 1] = new wchar_t[lengthOfStr + 1];
+            centeringString(values[i][j + 1], lengthOfStr + 1, value);
+        }
+        if (nT != nullptr)
+            nT = (*nT).next;
+
+        if (nT != nullptr && i != 10) {
+            t = nT->getData().getData().getData().getData();
+            endOutput = nT;
+        }
+        number++;
+    }
+    delete[] value;
+    value = nullptr;
+    number -= 11;
+    return values;
+}
+
+template<typename T>
+wchar_t ***Table<T>::getDataByIndex(int index) {
+    number = index + 1;
+    auto *value = new wchar_t[::wcslen(names[0]) + 1];
+    auto ***values = new wchar_t **[11];
+
+    startOutput = sortedRows[index];
+    Node<Node<Node<Node<T>>>> *nT = startOutput;
+    T t;
+    if (nT != nullptr)
+        t = nT->getData().getData().getData().getData();
+
+    for (int i = 0; i < 11; i++) {
+        values[i] = new wchar_t *[countColumns];
+        values[i][0] = new wchar_t[::wcslen(names[0]) + 1];
+
+        ::swprintf(value, ::wcslen(names[0]) + 1, L"%d", number);
+        centeringString(values[i][0], ::wcslen(names[0]) + 1, value);
+
+        for (int j = 0; j < countColumns - 1; j++) {
+            delete[] value;
+            int lengthOfStr = ::wcslen(names[j + 1]);
+            value = new wchar_t[lengthOfStr + 1];
+            if (nT != nullptr) {
+                auto *ptr = new wchar_t[lengthOfStr + 1];
+                t.get(ptr, j);
+                ::wcsncpy(value, ptr, lengthOfStr + 1);
+                delete[] ptr;
+                ptr = nullptr;
+            } else
+                ::swprintf(value, lengthOfStr + 1, L"—");
+
+            values[i][j + 1] = new wchar_t[lengthOfStr + 1];
+            centeringString(values[i][j + 1], lengthOfStr + 1, value);
+        }
+        if (nT != nullptr)
+            nT = (*nT).next;
+
+        if (nT != nullptr && i != 10) {
+            t = nT->getData().getData().getData().getData();
+            endOutput = nT;
+        }
+        number++;
+    }
+    delete[] value;
+    value = nullptr;
+    number -= 11;
     return values;
 }
 
@@ -141,12 +796,16 @@ void Table<T>::outputTopOfTable(WINDOW *window, int y) {
 }
 
 template<typename T>
-void Table<T>::outputRow(WINDOW *window, wchar_t **values, int y) {
+void Table<T>::outputRow(WINDOW *window, wchar_t **values, int y, int highlight) {
     outputTopOfRow(window, y, 0);
     wmove(window, y + 1, 0);
     wprintw(window, "%ls", L"│ ");
     for (int i = 0; i < countColumns; i++) {
+        if (i == highlight) {
+            wattr_on(window, A_REVERSE, nullptr);
+        }
         wprintw(window, "%ls", values[i]);
+        wattr_off(window, A_REVERSE, nullptr);
         if (i != countColumns - 1) {
             wprintw(window, "%ls", L" │ ");
         }
@@ -172,7 +831,7 @@ void Table<T>::outputTopOfRow(WINDOW *window, int y, int x) {
 
 template<typename T>
 void Table<T>::sidesScreen() {
-    WINDOW *sides = subwin(screen, 30, 120, 0, 0);
+    WINDOW *sides = subwin(wScreen, 30, 120, 0, 0);
     curs_set(0);
     int c = 0, h, w;
     getmaxyx(sides, h, w);
@@ -186,26 +845,45 @@ void Table<T>::sidesScreen() {
                 wattroff(sides, A_REVERSE);
             }
         }
-        mvwaddwstr(sides, h / 2, w / 2 - 18, L"Растяните экран, чтобы прямоугольник");
-        mvwaddwstr(sides, h / 2 + 1, w / 2 - 20, L"был виден полностью, затем нажмите ENTER");
+        switch (startScreenFlag) {
+            case 0: {
+                mvwaddwstr(sides, h / 2, w / 2 - 18, L"Растяните экран, чтобы прямоугольник");
+                mvwaddwstr(sides, h / 2 + 1, w / 2 - 20, L"был виден полностью, затем нажмите ENTER");
+                c = getch();
+                startScreenFlag++;
+                break;
+            }
+            case 1: {
+                mvwaddwstr(sides, h / 2, w / 2 - 8, L"Обработка данных");
+                startScreenFlag++;
+                c = 10;
+                break;
+            }
+                /*case 2:{
+                    break;
+                }*/
+            default: {
+                break;
+            }
+        }
         wrefresh(sides);
-        c = getch();
     }
-    curs_set(1);
-    /*delwin(sides);*/
     clear();
+    delwin(sides);
 }
 
 template<typename T>
-void Table<T>::initCurses() {
-    /*readListFromFile();*/
+void Table<T>::initCurses() {/*
+    readListFromFile();*/
     initscr();
+    curs_set(0);
     cbreak();
-    this->screen = stdscr;
-    this->menu = subwin(screen, 2, 120, 0, 0);
-    this->search = subwin(screen, 2, 120, 2, 0);
-    this->sort = subwin(screen, 2, 120, 4, 0);
-    this->table = subwin(screen, 24, 120, 6, 0);
+    keypad(stdscr, true);
+    this->wScreen = stdscr;
+    this->wMenu = subwin(wScreen, 2, 120, 0, 0);
+    this->wSearch = subwin(wScreen, 2, 120, 2, 0);
+    this->wSort = subwin(wScreen, 2, 120, 4, 0);
+    this->wTable = subwin(wScreen, 24, 120, 6, 0);
     sidesScreen();
 
 }
@@ -221,58 +899,42 @@ void Table<T>::redrawScreen() {
         }
     }
 
-    outputRow(search, fieldsSearch, 0);
-    outputTopOfTable(search, 0);
-    outputRow(sort, names, 0);
-
-    auto ***fieldsValues = getData(0);
-    for(int i = 0; i < 11; i++){
-        outputRow(table, fieldsValues[i], i * 2);
+    outputRow(wSearch, fieldsSearch, 0, 99);
+    outputTopOfTable(wSearch, 0);
+    outputRow(wSort, names, 0, 99);
+    for (int i = 0; i < countColumns; i++) {
+        delete[] fieldsSearch[i];
+        fieldsSearch[i] = nullptr;
     }
-    int y = getcury(table);
-    outputBottomOfTable(table, y + 1);
+    delete[] fieldsSearch;
+    fieldsSearch = nullptr;
 
-    box(menu, 0, 0);
-    wrefresh(menu);
-    wrefresh(search);
-    wrefresh(sort);
-    wrefresh(table);
-    getch();
 
-}
+    auto ***fieldsValues = getDataByIndex(0);
 
-template<typename T>
-void Table<T>::selectMenu() {
+    for (int i = 0; i < 11; i++) {
+        outputRow(wTable, fieldsValues[i], i * 2, 99);
+        for (int j =0; j < countColumns; j++){
+            delete[] fieldsValues[i][j];
+            fieldsValues[i][j] = nullptr;
+        }
+        delete[] fieldsValues[i];
+        fieldsValues[i] = nullptr;
+    }
+    delete[] fieldsValues;
+    fieldsValues = nullptr;
 
-}
 
-template<typename T>
-void Table<T>::selectSearch() {
+    int y = getcury(wTable);
+    outputBottomOfTable(wTable, y + 1);
 
-}
-
-template<typename T>
-void Table<T>::selectSort() {
-
-}
-
-template<typename T>
-void Table<T>::selectTable() {
+    selectMenu();
+    wrefresh(wMenu);
+    wrefresh(wSearch);
+    wrefresh(wSort);
+    wrefresh(wTable);
 
 }
-
-
-template<typename T>
-void Table<T>::finitCurses() {
-    endwin();
-}
-
-
-template<typename T>
-void Table<T>::choiceMenu() {
-
-}
-
 
 template<typename T>
 int Table<T>::readListFromFile() {
@@ -314,7 +976,11 @@ void Table<T>::splitNames() {
 }
 
 template<typename T>
-Table<T>::Table(const char *filename, const wchar_t *nameOfColumns, unsigned char countColumns, const char *types) {
+Table<T>::Table(
+        const char *filename,
+        const wchar_t *nameOfColumns,
+        unsigned char countColumns,
+        const char *types) {
     ::setlocale(LC_ALL, "");
 
     size_t countChars = strlen(filename) + 1;
@@ -330,10 +996,9 @@ Table<T>::Table(const char *filename, const wchar_t *nameOfColumns, unsigned cha
     this->types = new char[countChars];
     std::strcpy(this->types, types);
 
-
     this->countColumns = countColumns + 1;
     splitNames();
-    initCurses();
+
 }
 
 

@@ -25,11 +25,19 @@ public:
 
     void popBack();
 
+    void eraseAll();
+
     Node<T> *getAt(int index);
 
     Node<T> *insert(int index, Data<T> data);
 
     void erase(int index);
+
+    Node<T> *getHead();
+
+    Node<T> *getTail();
+
+    void resetList(Node<T> *head);
 
     int len();
 
@@ -170,6 +178,28 @@ void LinkedList<T>::erase(int index) {
 template<typename T>
 int LinkedList<T>::len() {
     return length_;
+}
+
+template<typename T>
+void LinkedList<T>::eraseAll() {
+    while(head_) popBack();
+    length_ = 0;
+}
+
+template<typename T>
+Node<T> *LinkedList<T>::getHead() {
+    return head_;
+}
+
+template<typename T>
+Node<T> *LinkedList<T>::getTail() {
+    return tail_;
+}
+
+template<typename T>
+void LinkedList<T>::resetList(Node<T> *head) {
+    head_ = head;
+    while (head->next != nullptr) tail_ = head = head->next;
 }
 
 

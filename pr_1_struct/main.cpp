@@ -10,11 +10,26 @@ using namespace std;
 int main() {
 
     Table<Person> table = Table<Person>("", L"       Фамилия       :Математика:Русский:Английский:Пол", 5, "  ");
-    for (int i = 0; i < 13; i++){
-        table.sortedRows.pushBack(table.rows.pushBack(table.list.pushBack(Person(L"qwerty", 100+i, 100+i, 100+i, L'м'))));
+    table.initCurses();
+    table.sidesScreen();
+    for (int i = 0; i < 999999; i++){
+        table.sortedRows.pushBack(table.searchedRows.pushBack(table.rows.pushBack(table.list.pushBack(Person(L"qwerty", i%100, -i%100, i%101, L'м')))));
     }
+    /*wchar_t *q = L"q";
+    table.search(1,q);*/
+
+   /* wchar_t ***a = table.getDataByIndex(0);
+    for (int i = 0; i < 11; i++) {
+        for (int j =0; j < table.countColumns; j++){
+            delete[] a[i][j];
+            a[i][j] = nullptr;
+        }
+        delete[] a[i];
+        a[i] = nullptr;
+    }
+    delete[] a;*/
     table.redrawScreen();
-    wchar_t ***pString = table.getData(0);
+
 //    table.redrawScreen();
     /*Person p = Person("ef",100,100,100, 'm');
     char a, *pi;
