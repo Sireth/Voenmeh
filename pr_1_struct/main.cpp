@@ -11,7 +11,6 @@ int main() {
 
     Table<Person> table = Table<Person>("", L"       Фамилия       :Математика:Русский:Английский:Пол", 5, "  ");
     table.initCurses();
-    table.sidesScreen();
     for (int i = 0; i < 999999; i++){
         table.sortedRows.pushBack(table.searchedRows.pushBack(table.rows.pushBack(table.list.pushBack(Person(L"qwerty", i%100, -i%100, i%101, L'м')))));
     }

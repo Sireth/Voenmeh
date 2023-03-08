@@ -11,13 +11,13 @@
 #include <csignal>
 #include <ncurses.h>
 
-/*#define KEY_UP 65
-#define KEY_DOWN 66
-#define KEY_RIGHT 67
-#define KEY_LEFT 68
-#define KEY_ENTER 10
-#define KEY_TAB 9*/
-#define KEY_ESC 27
+#define MENU_HINT 0
+#define SEARCH_HINT 1
+#define SORT_HINT 2
+#define TABLE_HINT 3
+#define LOADING_HINT 4
+#define ADD_HINT 5
+#define EDIT_HINT 6
 
 
 using namespace std;
@@ -28,7 +28,6 @@ class Table {
 public:
     unsigned char countColumns;
     const unsigned char outputLength = 20;
-    int startScreenFlag = 0;
 
     char *filename;
     char *types;
@@ -49,6 +48,7 @@ public:
     WINDOW *wSearch;
     WINDOW *wSort;
     WINDOW *wTable;
+    WINDOW *wHint;
 private:
     long long number;
 
@@ -65,6 +65,10 @@ public:
     void selectTable();
 
     void initCurses();
+
+    void deinitCurses();
+
+    void drawHint(int index);
 
     void sidesScreen();
 
@@ -109,6 +113,65 @@ private:
     Node<Node<Node<Node<T>>>> *
     merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *right, int index, char direction);
 };
+
+template<typename T>
+void Table<T>::deinitCurses() {
+    curs_set(1);
+    clear();
+    delwin(wMenu);
+    delwin(wSearch);
+    delwin(wSort);
+    delwin(wTable);
+    delwin(wHint);
+    delwin(wScreen);
+
+    endwin();
+}
+
+template<typename T>
+void Table<T>::drawHint(int index) {
+    wmove(wHint, 0, 0);
+    move(29, 0);
+    clrtoeol();
+    switch (index) {
+        case 0: {//Menu
+            wprintw(wHint, "%ls", L"←→↑↓: Перемещение.    ↵: Выбор.    ↹: Переход к таблице.");
+            break;
+        }
+        case 1: {//Search
+            wprintw(wHint, "%ls", L"←→↑↓: Перемещение.    ↵: Ввод.   ↹: Переход к таблице.");
+            break;
+        }
+        case 2: {//Sort
+            wprintw(wHint, "%ls", L"←→↑↓: Перемещение.    ↵: Сортировка по полю.   ↹: Переход к таблице.");
+            break;
+        }
+        case 3: {//Table
+            wprintw(wHint, "%ls", L"↑↓: Перемещение.    ↵: Редактирование.   ↹: Выход из таблицы.    DEL: Удаление.");
+            break;
+        }
+        case 4: {//Loading
+            wprintw(wHint, "%ls", L"Обработка данных.");
+            break;
+        }
+        case 5: {//Delete
+            wprintw(wHint, "%ls", L"");
+            break;
+        }
+        case 6: {//Add
+            wprintw(wHint, "%ls", L"");
+            break;
+        }
+        case 7: {//Edit
+            wprintw(wHint, "%ls", L"");
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    wrefresh(wHint);
+}
 
 template<typename T>
 wchar_t ***Table<T>::getData() {
@@ -161,7 +224,9 @@ wchar_t ***Table<T>::getData() {
 
 template<typename T>
 void Table<T>::selectTable() {
+    drawHint(TABLE_HINT);
     curs_set(1);
+    move(7, 1);
     wmove(wTable, 1, 1);
     wrefresh(wTable);
     wchar_t ***fieldsValues = getData();
@@ -207,6 +272,7 @@ void Table<T>::selectTable() {
 
 template<typename T>
 void Table<T>::selectSort(int index) {
+    drawHint(SORT_HINT);
     outputRow(wSort, names, 0, index + 1);
     wrefresh(wSort);
     int c, choice = index + 1;
@@ -227,13 +293,17 @@ void Table<T>::selectSort(int index) {
             case 10: {
                 sortFlag = !sortFlag;
                 if (!sortFlag) {
+                    drawHint(LOADING_HINT);
                     sort(choice - 1, 1);
                     redrawTable();
                     wrefresh(wTable);
+                    drawHint(SORT_HINT);
                 } else {
+                    drawHint(LOADING_HINT);
                     sort(choice - 1, -1);
                     redrawTable();
                     wrefresh(wTable);
+                    drawHint(SORT_HINT);
                 }
                 break;
             }
@@ -274,6 +344,7 @@ void Table<T>::outputMenu(int highlight) {
 
 template<typename T>
 void Table<T>::selectMenu() {
+    drawHint(MENU_HINT);
     noecho();
     outputMenu(0);
     int c, choice = 0;
@@ -302,13 +373,7 @@ void Table<T>::selectMenu() {
                         return redrawScreen();
                     }
                     case 3: {
-                        clear();
-                        delwin(wMenu);
-                        delwin(wSearch);
-                        delwin(wSort);
-                        delwin(wTable);
-                        delwin(wScreen);
-                        delwin(stdscr);
+                        deinitCurses();
                         ::exit(1);
                     }
                     default: {
@@ -348,6 +413,7 @@ void Table<T>::redrawTable() {
 
 template<typename T>
 void Table<T>::selectSearch(int index) {
+    drawHint(SEARCH_HINT);
     auto **fieldsSearch = new wchar_t *[countColumns];
     for (int i = 0; i < countColumns; i++) {
         int charLength = ::wcslen(names[i]);
@@ -386,9 +452,11 @@ void Table<T>::selectSearch(int index) {
                     str[::wcslen(names[choice + 1])] = 0;
                     findIndex = choice;
                 } else {
+                    drawHint(LOADING_HINT);
                     str[countOfSymbols] = 0;
                     search(findIndex, str);
                     redrawTable();
+                    drawHint(SEARCH_HINT);
                 }
                 break;
             }
@@ -462,7 +530,7 @@ void Table<T>::selectSearch(int index) {
 
     for (int i = 0; i < countColumns; i++) {
         delete[] fieldsSearch[i];
-        fieldsSearch = nullptr;
+        fieldsSearch[i] = nullptr;
     }
     delete[] fieldsSearch;
     delete[] str;
@@ -845,27 +913,12 @@ void Table<T>::sidesScreen() {
                 wattroff(sides, A_REVERSE);
             }
         }
-        switch (startScreenFlag) {
-            case 0: {
-                mvwaddwstr(sides, h / 2, w / 2 - 18, L"Растяните экран, чтобы прямоугольник");
-                mvwaddwstr(sides, h / 2 + 1, w / 2 - 20, L"был виден полностью, затем нажмите ENTER");
-                c = getch();
-                startScreenFlag++;
-                break;
-            }
-            case 1: {
-                mvwaddwstr(sides, h / 2, w / 2 - 8, L"Обработка данных");
-                startScreenFlag++;
-                c = 10;
-                break;
-            }
-                /*case 2:{
-                    break;
-                }*/
-            default: {
-                break;
-            }
-        }
+        mvwaddwstr(sides, h / 2, w / 2 - 18, L"Растяните экран, чтобы прямоугольник");
+        mvwaddwstr(sides, h / 2 + 1, w / 2 - 20, L"был виден полностью, затем нажмите ENTER");
+        wrefresh(sides);
+        c = getch();
+        clear();
+        mvwaddwstr(sides, h / 2, w / 2 - 8, L"Обработка данных");
         wrefresh(sides);
     }
     clear();
@@ -884,6 +937,8 @@ void Table<T>::initCurses() {/*
     this->wSearch = subwin(wScreen, 2, 120, 2, 0);
     this->wSort = subwin(wScreen, 2, 120, 4, 0);
     this->wTable = subwin(wScreen, 24, 120, 6, 0);
+    this->wHint = subwin(wScreen, 1, 120, 29, 0);
+
     sidesScreen();
 
 }
