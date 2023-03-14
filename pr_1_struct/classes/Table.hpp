@@ -17,7 +17,8 @@
 #define TABLE_HINT 3
 #define LOADING_HINT 4
 #define ADD_HINT 5
-#define EDIT_HINT 6
+#define DELETE_HINT 6
+#define EDIT_HINT 7
 
 
 using namespace std;
@@ -27,7 +28,6 @@ class Table {
 
 public:
     unsigned char countColumns;
-    const unsigned char outputLength = 20;
 
     char *filename;
     char *types;
@@ -54,7 +54,7 @@ private:
 
 public:
 
-    Table(const char *filename, const wchar_t *nameOfColumns, unsigned char countColumns, const char *types);
+    Table(char *filename, const wchar_t *nameOfColumns, unsigned char countColumns, const char *types);
 
     void selectSearch(int index);
 
@@ -63,6 +63,10 @@ public:
     void selectSort(int index);
 
     void selectTable();
+
+    void selectEdit(Node<T> *node, int indexRow);
+
+    void addElement();
 
     void initCurses();
 
@@ -76,11 +80,15 @@ public:
 
     int readListFromFile();
 
+    int writeListToFile();
+
     void redrawTable();
 
     void outputMenu(int highlight);
 
     void outputRow(WINDOW *window, wchar_t **values, int y, int highlight);
+
+    void outputRow(WINDOW *window, wchar_t **values, int y, int highlight, int color);
 
     void outputTopOfTable(WINDOW *window, int y);
 
@@ -113,6 +121,118 @@ private:
     Node<Node<Node<Node<T>>>> *
     merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *right, int index, char direction);
 };
+
+template<typename T>
+void Table<T>::addElement() {
+    sortedRows.eraseAll();
+    searchedRows.eraseAll();
+    startOutput = nullptr;
+    T t = T();
+    sortedRows.pushBack(searchedRows.pushBack(rows.pushBack(list.pushBack(t))));
+    return selectTable();
+}
+
+template<typename T>
+void Table<T>::selectEdit(Node<T> *node, int indexRow) {
+    drawHint(EDIT_HINT);
+    curs_set(0);
+    ::wint_t c = 0;
+    int choice = 1;
+    bool editFlag = false;
+    wchar_t *str;
+    int countOfSymbols;
+    auto **fieldsEdit = new wchar_t *[countColumns];
+    for (int i = 0; i < countColumns; i++) {
+        int charLength = ::wcslen(names[i]);
+        fieldsEdit[i] = new wchar_t[charLength + 1];
+    }
+    do {
+        switch (c) {
+            case KEY_RIGHT: {
+                if (!editFlag) {
+                    choice++;
+                    if (choice > countColumns - 1) choice = countColumns - 1;
+                }
+                break;
+            }
+            case KEY_LEFT: {
+                if (!editFlag) {
+                    choice--;
+                    if (choice < 1) choice = 1;
+                }
+                break;
+            }
+            case 10: {
+                editFlag = !editFlag;
+                if (editFlag) {
+
+                    str = new wchar_t[::wcslen(names[choice]) + 1];
+                    countOfSymbols = 0;
+                    str[0] = 0;
+                } else {
+                    T t = node->getData();
+                    t.set(str, choice - 1);
+                    node->editData(t);
+                    delete[] str;
+                    str = nullptr;
+                }
+                break;
+            }
+            case KEY_BACKSPACE: {
+                if (countOfSymbols != 0) {
+                    countOfSymbols--;
+                    str[countOfSymbols] = 0;
+                }
+                break;
+            }
+            default: {
+                if (editFlag && (::wcslen(names[choice]) > countOfSymbols) &&
+                    (c >= 44 && c < 176 || c == 32 || c >= 0x400)) {
+                    str[countOfSymbols] = c;
+                    countOfSymbols++;
+                    str[countOfSymbols] = 0;
+                }
+                break;
+            }
+        }
+        auto *value = new wchar_t[::wcslen(names[0]) + 1];
+        ::swprintf(value, ::wcslen(names[0]) + 1, L"Edit");
+        centeringString(fieldsEdit[0], ::wcslen(names[0]) + 1, value);
+        T t = node->getData();
+        for (int j = 0; j < countColumns - 1; j++) {
+            delete[] value;
+            int lengthOfStr = ::wcslen(names[j + 1]);
+            value = new wchar_t[lengthOfStr + 1];
+            if (editFlag && (j + 1 == choice)) {
+                ::wcsncpy(value, str, countOfSymbols + 1);
+            } else {
+                auto *ptr = new wchar_t[lengthOfStr + 1];
+                t.get(ptr, j);
+                ::wcsncpy(value, ptr, lengthOfStr + 1);
+                delete[] ptr;
+                ptr = nullptr;
+            }
+
+            fieldsEdit[j + 1] = new wchar_t[lengthOfStr + 1];
+            centeringString(fieldsEdit[j + 1], lengthOfStr + 1, value);
+        }
+        delete[] value;
+        value = nullptr;
+        if (!editFlag)
+            outputRow(wTable, fieldsEdit, indexRow * 2, choice);
+        else
+            outputRow(wTable, fieldsEdit, indexRow * 2, choice, 1);
+        wrefresh(wTable);
+        get_wch(&c);
+    } while (c != 27);
+
+    for (int i = 0; i < countColumns; i++) {
+        delete[] fieldsEdit[i];
+        fieldsEdit[i] = nullptr;
+    }
+    delete[] fieldsEdit;
+    fieldsEdit = nullptr;
+}
 
 template<typename T>
 void Table<T>::deinitCurses() {
@@ -163,7 +283,7 @@ void Table<T>::drawHint(int index) {
             break;
         }
         case 7: {//Edit
-            wprintw(wHint, "%ls", L"");
+            wprintw(wHint, "%ls", L"←→: Перемещение.    ↵: Редактирование.   ESC: Выход из редактирования.");
             break;
         }
         default: {
@@ -230,8 +350,10 @@ void Table<T>::selectTable() {
     wmove(wTable, 1, 1);
     wrefresh(wTable);
     wchar_t ***fieldsValues = getData();
-    int c, currentRow = 0;
-    while ((c = getch()) != 9) {
+    int c = 0, currentRow = 0;
+    do {
+        M1:
+        curs_set(1);
         switch (c) {
             case KEY_UP: {
                 currentRow--;
@@ -250,7 +372,44 @@ void Table<T>::selectTable() {
                 break;
             }
             case 10: {
+                Node<Node<Node<Node<T>>>> *node = startOutput;
+                if (node != nullptr) {
+                    for (int i = 0; i < currentRow; i++) {
+                        if (node->next != nullptr)
+                            node = node->next;
+                        else goto M1;
+                    }
+                    Node<T> *nodeEl = node->getData().getData().getData().next;
+                    if (nodeEl == nullptr) nodeEl = list.getTail();
+                    else nodeEl = nodeEl->prev;
+                    selectEdit(nodeEl, currentRow);
+                }
+                fieldsValues = getData();
+                c = 99;
+                drawHint(TABLE_HINT);
+                move(7, 1);
+                currentRow = 0;
+                wmove(wTable, currentRow * 2 + 1, 1);
+                goto M1;
+                break;
+            }
+            case KEY_DC: { //DELETE
+                Node<Node<Node<Node<T>>>> *node = startOutput->getAddress();
+                if (node != nullptr) {
+                    for (int i = 0; i < currentRow; i++) {
+                        node = node->next;
+                    }
+                    if (currentRow == 0) startOutput = nullptr;
 
+                    list.erase(node->getData().getData().getData().getAddress());
+                    rows.erase(node->getData().getData().getAddress());
+                    searchedRows.erase(node->getData().getAddress());
+                    sortedRows.erase(node);
+                }
+
+                fieldsValues = getData();
+                c = 99;
+                goto M1;
                 break;
             }
             default: {
@@ -265,7 +424,7 @@ void Table<T>::selectTable() {
         outputBottomOfTable(wTable, y + 1);
         wmove(wTable, currentRow * 2 + 1, 1);
         wrefresh(wTable);
-    }
+    } while ((c = getch()) != 9);
     curs_set(0);
     return selectSort(0);
 }
@@ -310,7 +469,7 @@ void Table<T>::selectSort(int index) {
             case KEY_UP: {
                 outputRow(wSort, names, 0, 99);
                 wrefresh(wSort);
-                return selectSearch(choice - 1);
+                return selectSearch(choice);
             }
             default: {
                 break;
@@ -362,6 +521,16 @@ void Table<T>::selectMenu() {
             }
             case 10: {
                 switch (choice) {
+                    case 0: {
+                        outputMenu(99);
+                        return addElement();
+                    }
+                    case 1: {
+                        drawHint(LOADING_HINT);
+                        writeListToFile();
+                        drawHint(MENU_HINT);
+                        break;
+                    }
                     case 2: {
                         clear();
                         WINDOW *wHelp = subwin(stdscr, 30, 120, 0, 0);
@@ -384,7 +553,7 @@ void Table<T>::selectMenu() {
             }
             case KEY_DOWN: {
                 outputMenu(99);
-                return selectSearch(0);
+                return selectSearch(1);
             }
             default: {
                 break;
@@ -419,7 +588,8 @@ void Table<T>::selectSearch(int index) {
         int charLength = ::wcslen(names[i]);
         fieldsSearch[i] = new wchar_t[charLength + 1];
     }
-    int c = 0, choice = index, findIndex = 99;
+    int choice = index, findIndex = 99;
+    ::wint_t c = 0;
     bool writeFlag = false;
     noecho();
     wchar_t *str = nullptr;
@@ -429,34 +599,36 @@ void Table<T>::selectSearch(int index) {
             case KEY_RIGHT: {
                 if (!writeFlag) {
                     choice++;
-                    if (choice > countColumns - 2) choice = countColumns - 2;
+                    if (choice > countColumns - 1) choice = countColumns - 1;
                 }
                 break;
             }
             case KEY_LEFT: {
                 if (!writeFlag) {
                     choice--;
-                    if (choice < 0) choice = 0;
+                    if (choice < 1) choice = 1;
                 }
                 break;
             }
             case 10: {
                 writeFlag = !writeFlag;
                 if (writeFlag) {
-                    countOfSymbols = 0;
-
                     delete[] str;
-
-                    str = new wchar_t[::wcslen(names[choice + 1]) + 1];
-                    for (int i = 0; i < ::wcslen(names[choice + 1]); i++) str[i] = L' ';
-                    str[::wcslen(names[choice + 1])] = 0;
-                    findIndex = choice;
+                    str = new wchar_t[::wcslen(names[choice]) + 1];
+                    countOfSymbols = 0;
+                    str[0] = 0;
                 } else {
                     drawHint(LOADING_HINT);
-                    str[countOfSymbols] = 0;
-                    search(findIndex, str);
+                    search(choice - 1, str);
                     redrawTable();
                     drawHint(SEARCH_HINT);
+                }
+                break;
+            }
+            case KEY_BACKSPACE: {
+                if (countOfSymbols != 0) {
+                    countOfSymbols--;
+                    str[countOfSymbols] = 0;
                 }
                 break;
             }
@@ -488,42 +660,44 @@ void Table<T>::selectSearch(int index) {
                 delete[] str;
                 str = nullptr;
 
-                return selectSort(choice);
+                return selectSort(choice - 1);
             }
             default: {
-                if (writeFlag && (countOfSymbols) < (::wcslen(names[choice + 1]) - 1) && c > 44 && c < 176) {
+                if (writeFlag && (countOfSymbols) < (::wcslen(names[choice])) &&
+                    (c >= 44 && c < 176 || c == 32 || c >= 0x400)) {
                     str[countOfSymbols] = c;
                     countOfSymbols++;
-                    str[::wcslen(names[choice + 1])] = 0;
+                    str[countOfSymbols] = 0;
                 }
                 break;
             }
         }
-        for (int i = 0; i < countColumns; i++) {
-            int charLength = ::wcslen(names[i]);
-            if (writeFlag || (i != (findIndex + 1))) {
-                for (int j = 0; j < charLength; j++) {
-                    fieldsSearch[i][j] = L' ';
-                    if ((findIndex + 1) == i) {
-                        fieldsSearch[i][j] = str[j];
-                    }
-                }
-            }
-            if (i == 0) {
-                auto *ptr = new wchar_t[charLength + 1];
-                swprintf(ptr, charLength + 1, L"%d", searchedRows.len());
-                centeringString(fieldsSearch[i], charLength + 1, ptr);
-                delete[] ptr;
-                ptr = nullptr;
-            }
-            fieldsSearch[i][charLength] = L'\000';
-        }
+        auto *value = new wchar_t[::wcslen(names[0]) + 1];
+        ::swprintf(value, ::wcslen(names[0]) + 1, L"%d", searchedRows.len());
+        centeringString(fieldsSearch[0], ::wcslen(names[0]) + 1, value);
 
+        for (int j = 1; j < countColumns; j++) {
+            delete[] value;
+            int lengthOfStr = ::wcslen(names[j]);
+            value = new wchar_t[lengthOfStr + 1];
+            value[0] = L'⌕';
+            value[1] = 0;
+            if (writeFlag && (j == choice)) {
+                ::wcsncpy(value, str, countOfSymbols + 1);
+            }
+            centeringString(fieldsSearch[j], lengthOfStr + 1, value);
+        }
+        delete[] value;
+        value = nullptr;
         wmove(wSearch, 0, 0);
-        outputRow(wSearch, fieldsSearch, 0, choice + 1);
+        if (!writeFlag)
+            outputRow(wSearch, fieldsSearch, 0, choice);
+        else
+            outputRow(wSearch, fieldsSearch, 0, choice, 1);
         outputTopOfTable(wSearch, 0);
         wrefresh(wSearch);
-    } while ((c = getch()) != 9);
+        get_wch(&c);
+    } while (c != 9);
     outputRow(wSearch, fieldsSearch, 0, 99);
     outputTopOfTable(wSearch, 0);
     wrefresh(wSearch);
@@ -882,6 +1056,30 @@ void Table<T>::outputRow(WINDOW *window, wchar_t **values, int y, int highlight)
 }
 
 template<typename T>
+void Table<T>::outputRow(WINDOW *window, wchar_t **values, int y, int highlight, int color) {
+    outputTopOfRow(window, y, 0);
+    wmove(window, y + 1, 0);
+    wprintw(window, "%ls", L"│ ");
+    for (int i = 0; i < countColumns; i++) {
+        if (i == highlight) {
+            if (!has_colors())
+                wattr_on(window, A_REVERSE, nullptr);
+            else
+                wattr_on(window, COLOR_PAIR(color), nullptr);
+        }
+        wprintw(window, "%ls", values[i]);
+        if (!has_colors())
+            wattr_off(window, A_REVERSE, nullptr);
+        else
+            wattr_off(window, COLOR_PAIR(color), nullptr);
+        if (i != countColumns - 1) {
+            wprintw(window, "%ls", L" │ ");
+        }
+    }
+    wprintw(window, "%ls", L" │");
+}
+
+template<typename T>
 void Table<T>::outputTopOfRow(WINDOW *window, int y, int x) {
     wmove(window, y, x);
     wprintw(window, "%ls", L"├─");
@@ -926,9 +1124,9 @@ void Table<T>::sidesScreen() {
 }
 
 template<typename T>
-void Table<T>::initCurses() {/*
-    readListFromFile();*/
+void Table<T>::initCurses() {
     initscr();
+    resize_term(31, 121);
     curs_set(0);
     cbreak();
     keypad(stdscr, true);
@@ -938,8 +1136,12 @@ void Table<T>::initCurses() {/*
     this->wSort = subwin(wScreen, 2, 120, 4, 0);
     this->wTable = subwin(wScreen, 24, 120, 6, 0);
     this->wHint = subwin(wScreen, 1, 120, 29, 0);
-
+    if (has_colors()) {
+        start_color();
+        init_pair(1, COLOR_BLACK, 223);
+    }
     sidesScreen();
+    readListFromFile();
 
 }
 
@@ -949,10 +1151,21 @@ void Table<T>::redrawScreen() {
     for (int i = 0; i < countColumns; i++) {
         int charLength = ::wcslen(names[i]);
         fieldsSearch[i] = new wchar_t[charLength + 1];
-        for (int j = 0; j < charLength; j++) {
-            fieldsSearch[i][j] = L' ';
-        }
     }
+    auto *value = new wchar_t[::wcslen(names[0]) + 1];
+    ::swprintf(value, ::wcslen(names[0]) + 1, L"%d", searchedRows.len());
+    centeringString(fieldsSearch[0], ::wcslen(names[0]) + 1, value);
+
+    for (int j = 1; j < countColumns; j++) {
+        delete[] value;
+        int lengthOfStr = ::wcslen(names[j]);
+        value = new wchar_t[lengthOfStr + 1];
+        value[0] = L'⌕';
+        value[1] = 0;
+        centeringString(fieldsSearch[j], lengthOfStr + 1, value);
+    }
+    delete[] value;
+    value = nullptr;
 
     outputRow(wSearch, fieldsSearch, 0, 99);
     outputTopOfTable(wSearch, 0);
@@ -993,19 +1206,43 @@ void Table<T>::redrawScreen() {
 
 template<typename T>
 int Table<T>::readListFromFile() {
-    std::ifstream in(filename, std::ios::binary);
-    if (!in) throw std::ifstream::failure("Can't open file");
+    std::ifstream in = std::ifstream(filename, ::ios::binary);
+    if (!in) {
+        ofstream newFile = std::ofstream(filename, ::ios::binary);
+        newFile.close();
+        in = std::ifstream(filename, ::ios::binary);
+    }
+    if (!in) {
+        throw std::ifstream::failure("Can't open file");
+    }
     in.seekg(0, std::ios_base::end);
     long long countElements = in.tellg() / sizeof(T);
     in.seekg(0, std::ios_base::beg);
     in.clear();
+    long sizeT = sizeof(T);
     for (long long i = 0; i < countElements; i++) {
         T element;
-        in.read((char *) &element, sizeof(T));
+        in.read((char *) &element, sizeT);
         Node<T> *node = list.pushBack(element);
         rows.pushBack(node);
     }
     in.close();
+    return 0;
+}
+
+template<typename T>
+int Table<T>::writeListToFile() {
+    std::ofstream out(filename, ::ios::binary | ::ios::out);
+    if (!out) throw std::ifstream::failure("Can't open file");
+    Node<T> *node = list.getHead();
+    long sizeT = sizeof(T);
+    while (node != nullptr) {
+        T t = node->getData();
+        out.write((char *) &t, sizeT);
+        node = node->next;
+    }
+
+    out.close();
     return 0;
 }
 
@@ -1032,24 +1269,20 @@ void Table<T>::splitNames() {
 
 template<typename T>
 Table<T>::Table(
-        const char *filename,
+        char *filename,
         const wchar_t *nameOfColumns,
         unsigned char countColumns,
         const char *types) {
     ::setlocale(LC_ALL, "");
 
-    size_t countChars = strlen(filename) + 1;
+    size_t countChars = ::strlen(filename) + 1;
     this->filename = new char[countChars];
-    std::strcpy(this->filename, filename);
+    std::strncpy(this->filename, filename, countChars);
 
     countChars = ::wcslen(nameOfColumns) + 1;
 
     this->nameOfColumns = new wchar_t[countChars];
-    std::wcscpy(this->nameOfColumns, nameOfColumns);
-
-    countChars = strlen(types) + 1;
-    this->types = new char[countChars];
-    std::strcpy(this->types, types);
+    std::wcsncpy(this->nameOfColumns, nameOfColumns, countChars);
 
     this->countColumns = countColumns + 1;
     splitNames();

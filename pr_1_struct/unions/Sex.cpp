@@ -6,7 +6,7 @@ Sex::Sex(wchar_t sex) {
     if (wcschr(L"МЖмжMFmf", sex) != nullptr) {
         this->str = sex;
     } else if (sex == 0 || sex == 1) {
-        this->digit = sex;
+        this->str = (char)sex;
     } else {
         this->str = L'M';
     }

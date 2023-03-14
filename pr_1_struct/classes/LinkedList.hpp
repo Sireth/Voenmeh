@@ -33,6 +33,8 @@ public:
 
     void erase(int index);
 
+    void erase(Node<T> *node);
+
     Node<T> *getHead();
 
     Node<T> *getTail();
@@ -171,8 +173,19 @@ void LinkedList<T>::erase(int index) {
         left->next = right;
         right->prev = left;
         length_--;
-        delete ptr;
     }
+}
+
+template<typename T>
+void LinkedList<T>::erase(Node<T> *node) {
+    Node<T> *ptr = node;
+    if (ptr == nullptr) return;
+    if (ptr->next == nullptr) return popBack();
+    else if (ptr->prev == nullptr) return popFront();
+    ptr->next->prev = ptr->prev;
+    ptr->prev->next = ptr->next;
+    length_--;
+//    delete ptr;
 }
 
 template<typename T>

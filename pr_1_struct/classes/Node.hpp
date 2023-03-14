@@ -17,8 +17,14 @@ public:
     int editData(T data);
 
     int editData(T *data);
+
+    Node<T> *getAddress();
 };
 
+template<typename T>
+Node<T> *Node<T>::getAddress() {
+    return this;
+}
 
 template<typename T>
 Node<T>::Node(Data<T> data): data(data) {

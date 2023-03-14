@@ -9,7 +9,7 @@ Person::Person(const wchar_t *surname, char math, char rus, char en, wchar_t sex
     this->sex = Sex(sex);
 }
 
-void Person::get(wchar_t* dest, int index) {
+void Person::get(wchar_t *dest, int index) {
     switch (index) {
         case 0: {
 //            dest = new wchar_t [20];
@@ -49,7 +49,7 @@ void Person::get(wchar_t* dest, int index) {
 void Person::set(const wchar_t *str, int index) {
     switch (index) {
         case 0: {
-            ::wcsncpy(this->surname, str, sizeof(this->surname));
+            ::wcsncpy(this->surname, str, 20);
             break;
         }
         case 1: {
@@ -65,7 +65,12 @@ void Person::set(const wchar_t *str, int index) {
             break;
         }
         case 4: {
-            this->sex = str[0];
+            if(str[0] == L'1')
+                this->sex = 1;
+            else if(str[0] == L'0')
+                this->sex = 0;
+            else
+                this->sex = str[0];
             break;
         }
         default: {
@@ -74,7 +79,7 @@ void Person::set(const wchar_t *str, int index) {
     }
 }
 
-Person::Person() : Person(L"qwerty", 89, 89, 89, 1) {}
+Person::Person() : Person(L"-New-", 0, 0, 0, 1) {}
 
 int Person::comparison(int index, wchar_t *data) {
     switch (index) {
@@ -100,25 +105,18 @@ int Person::comparison(int index, wchar_t *data) {
             return 0;
         }
         case 4: {
-            char temp = sex.digit;
-            if (sex.digit > 2) {
-                if (wcschr(L"МмMm", data[0]) != nullptr) temp = 1;
-                else temp = 0;
-            }
+            wchar_t temp = sex.str;
+            wchar_t tempData = data[0];
+            if (wcschr(L"МмMm", temp) != nullptr) temp = 1;
+            else if (wcschr(L"ЖжFf", temp) != nullptr)temp = 0;
+            if (wcschr(L"МмMm", data[0]) != nullptr) tempData = 1;
+            else if (wcschr(L"ЖжFf", data[0]) != nullptr)tempData = 0;
+            else tempData -=L'0';
 
-            if (data[0] < 2) {
-                if (temp < data[0]) return -1;
-                else if (temp > data[0]) return 1;
-                return 0;
-            } else {
-                char tempData;
-                if (wcschr(L"МмMm", data[0]) != nullptr) tempData = 1;
-                else tempData = 0;
-                if (temp < tempData) return -1;
-                else if (temp > tempData) return 1;
-                return 0;
-            }
 
+            if (temp < tempData) return -1;
+            else if (temp > tempData) return 1;
+            return 0;
         }
         default: {
             return 0;
