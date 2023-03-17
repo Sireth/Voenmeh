@@ -19,11 +19,11 @@ struct Person {
 
     Person();
 
-    void get(wchar_t *dest, int index);
+    static char comparison(int index, Person *left, Person *right);
 
-    void set(const wchar_t *str, int index);
+    static void get(wchar_t *dest, int index, Person *element);
 
-    int comparison(int index, wchar_t *data);
+    static void set(wchar_t *str, int index, Person *element);
 };
 
 

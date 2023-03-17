@@ -9,34 +9,87 @@ Person::Person(const wchar_t *surname, char math, char rus, char en, wchar_t sex
     this->sex = Sex(sex);
 }
 
-void Person::get(wchar_t *dest, int index) {
+Person::Person() : Person(L"-New-", 0, 0, 0, 1) {}
+
+char Person::comparison(int index, Person *left, Person *right) {
     switch (index) {
         case 0: {
-//            dest = new wchar_t [20];
-            ::wcsncpy(dest, this->surname, 20);
+            return ::wcscmp(left->surname, right->surname);
+        }
+        case 1: {
+            char tempData = right->math;
+            if (left->math < tempData) return -1;
+            else if (left->math > tempData) return 1;
+            return 0;
+        }
+        case 2: {
+            char tempData = right->rus;
+            if (left->rus < tempData) return -1;
+            else if (left->rus > tempData) return 1;
+            return 0;
+        }
+        case 3: {
+            char tempData = right->en;
+            if (left->en < tempData) return -1;
+            else if (left->en > tempData) return 1;
+            return 0;
+        }
+        case 4: {
+            int l, r;
+            wchar_t lw = left->sex.str, rw = right->sex.str;
+
+            if(left->sex.digit == 1)
+                l = 1;
+            else if(left->sex.digit == 0)
+                l = 0;
+            else if (wcschr(L"МмMm", lw) != nullptr)
+                l = 1;
+            else
+                l = 0;
+
+
+            if(right->sex.digit == 1)
+                r = 1;
+            else if(right->sex.digit == 0)
+                r = 0;
+            else if (wcschr(L"МмMm", rw) != nullptr)
+                r = 1;
+            else
+                r = 0;
+
+            if (l < r) return -1;
+            if (l > r) return 1;
+            return 0;
+        }
+        default: {
+            return 0;
+        }
+    }
+}
+
+void Person::get(wchar_t *dest, int index, Person *element) {
+    switch (index) {
+        case 0: {
+            ::wcsncpy(dest, element->surname, 20);
             break;
         }
         case 1: {
-//            dest = new wchar_t[4];
-            ::swprintf(dest, 4, L"%d", this->math);
+            ::swprintf(dest, 4, L"%d", element->math);
             break;
         }
         case 2: {
-//            dest = new wchar_t[4];
-            ::swprintf(dest, 4, L"%d", this->rus);
+            ::swprintf(dest, 4, L"%d", element->rus);
             break;
         }
         case 3: {
-//            dest = new wchar_t[4];
-            ::swprintf(dest, 4, L"%d", this->en);
+            ::swprintf(dest, 4, L"%d", element->en);
             break;
         }
         case 4: {
-//            dest = new wchar_t[2];
-            if (this->sex.str == 0 || this->sex.str == 1) {
-                ::swprintf(dest, 2, L"%d", this->sex.str);
+            if (element->sex.digit == 0 || element->sex.digit == 1) {
+                ::swprintf(dest, 2, L"%d", element->sex.digit);
             } else {
-                ::swprintf(dest, 2, L"%lc", this->sex.str);
+                ::swprintf(dest, 2, L"%lc", element->sex.str);
             }
             break;
         }
@@ -46,80 +99,30 @@ void Person::get(wchar_t *dest, int index) {
     }
 }
 
-void Person::set(const wchar_t *str, int index) {
+void Person::set(wchar_t *str, int index, Person *element) {
     switch (index) {
         case 0: {
-            ::wcsncpy(this->surname, str, 20);
+            ::wcsncpy(element->surname, str, 20);
             break;
         }
         case 1: {
-            this->math = wcstol(str, nullptr, 10);
+            element->math = wcstol(str, nullptr, 10);
             break;
         }
         case 2: {
-            this->rus = wcstol(str, nullptr, 10);
+            element->rus = wcstol(str, nullptr, 10);
             break;
         }
         case 3: {
-            this->en = wcstol(str, nullptr, 10);
+            element->en = wcstol(str, nullptr, 10);
             break;
         }
         case 4: {
-            if(str[0] == L'1')
-                this->sex = 1;
-            else if(str[0] == L'0')
-                this->sex = 0;
-            else
-                this->sex = str[0];
+            element->sex = str[0];
             break;
         }
         default: {
             return;
-        }
-    }
-}
-
-Person::Person() : Person(L"-New-", 0, 0, 0, 1) {}
-
-int Person::comparison(int index, wchar_t *data) {
-    switch (index) {
-        case 0: {
-            return ::wcscmp(surname, data);
-        }
-        case 1: {
-            char tempData = wcstol(data, nullptr, 10);
-            if (math < tempData) return -1;
-            else if (math > tempData) return 1;
-            return 0;
-        }
-        case 2: {
-            char tempData = wcstol(data, nullptr, 10);
-            if (rus < tempData) return -1;
-            else if (rus > tempData) return 1;
-            return 0;
-        }
-        case 3: {
-            char tempData = wcstol(data, nullptr, 10);
-            if (en < tempData) return -1;
-            else if (en > tempData) return 1;
-            return 0;
-        }
-        case 4: {
-            wchar_t temp = sex.str;
-            wchar_t tempData = data[0];
-            if (wcschr(L"МмMm", temp) != nullptr) temp = 1;
-            else if (wcschr(L"ЖжFf", temp) != nullptr)temp = 0;
-            if (wcschr(L"МмMm", data[0]) != nullptr) tempData = 1;
-            else if (wcschr(L"ЖжFf", data[0]) != nullptr)tempData = 0;
-            else tempData -=L'0';
-
-
-            if (temp < tempData) return -1;
-            else if (temp > tempData) return 1;
-            return 0;
-        }
-        default: {
-            return 0;
         }
     }
 }

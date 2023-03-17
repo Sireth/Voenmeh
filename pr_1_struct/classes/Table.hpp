@@ -30,7 +30,6 @@ public:
     unsigned char countColumns;
 
     char *filename;
-    char *types;
     wchar_t *nameOfColumns;
     wchar_t **names;
     const wchar_t *menuNames[4] = {L"Добавление элемента", L"Сохранить файл", L"Помощь", L"Выход"};
@@ -42,6 +41,9 @@ public:
     Node<Node<Node<Node<T>>>> *startOutput;
     Node<Node<Node<Node<T>>>> *endOutput;
 
+    char (*comparison)(int index, T *left, T *right);
+    void (*get)(wchar_t *dest, int index, T *element);
+    void (*set)(wchar_t *str, int index, T *element);
 
     WINDOW *wScreen;
     WINDOW *wMenu;
@@ -54,7 +56,8 @@ private:
 
 public:
 
-    Table(char *filename, const wchar_t *nameOfColumns, unsigned char countColumns, const char *types);
+    Table(char *filename, const wchar_t *nameOfColumns, unsigned char countColumns,
+          void (*get)(wchar_t *, int, T *), void (*set)(wchar_t *, int, T *), char (*comparison)(int, T *, T *));
 
     void selectSearch(int index);
 
@@ -170,9 +173,9 @@ void Table<T>::selectEdit(Node<T> *node, int indexRow) {
                     countOfSymbols = 0;
                     str[0] = 0;
                 } else {
-                    T t = node->getData();
-                    t.set(str, choice - 1);
-                    node->editData(t);
+                    T *t = new T(node->getData());
+                    set(str, choice - 1, t);
+                    node->editData(*t);
                     delete[] str;
                     str = nullptr;
                 }
@@ -198,7 +201,7 @@ void Table<T>::selectEdit(Node<T> *node, int indexRow) {
         auto *value = new wchar_t[::wcslen(names[0]) + 1];
         ::swprintf(value, ::wcslen(names[0]) + 1, L"Edit");
         centeringString(fieldsEdit[0], ::wcslen(names[0]) + 1, value);
-        T t = node->getData();
+        T *t = new T(node->getData());
         for (int j = 0; j < countColumns - 1; j++) {
             delete[] value;
             int lengthOfStr = ::wcslen(names[j + 1]);
@@ -207,7 +210,7 @@ void Table<T>::selectEdit(Node<T> *node, int indexRow) {
                 ::wcsncpy(value, str, countOfSymbols + 1);
             } else {
                 auto *ptr = new wchar_t[lengthOfStr + 1];
-                t.get(ptr, j);
+                get(ptr, j, t);
                 ::wcsncpy(value, ptr, lengthOfStr + 1);
                 delete[] ptr;
                 ptr = nullptr;
@@ -225,13 +228,6 @@ void Table<T>::selectEdit(Node<T> *node, int indexRow) {
         wrefresh(wTable);
         get_wch(&c);
     } while (c != 27);
-
-    for (int i = 0; i < countColumns; i++) {
-        delete[] fieldsEdit[i];
-        fieldsEdit[i] = nullptr;
-    }
-    delete[] fieldsEdit;
-    fieldsEdit = nullptr;
 }
 
 template<typename T>
@@ -300,9 +296,9 @@ wchar_t ***Table<T>::getData() {
     auto ***values = new wchar_t **[11];
     Node<Node<Node<Node<T>>>> *nT;
     nT = startOutput;
-    T t;
+    T *t;
     if (nT != nullptr)
-        t = nT->getData().getData().getData().getData();
+        t = new T(nT->getData().getData().getData().getData());
 
     for (int i = 0; i < 11; i++) {
         values[i] = new wchar_t *[countColumns];
@@ -317,7 +313,7 @@ wchar_t ***Table<T>::getData() {
             value = new wchar_t[lengthOfStr + 1];
             if (nT != nullptr) {
                 auto *ptr = new wchar_t[lengthOfStr + 1];
-                t.get(ptr, j);
+                get(ptr, j, t);
                 ::wcsncpy(value, ptr, lengthOfStr + 1);
                 delete[] ptr;
                 ptr = nullptr;
@@ -331,7 +327,7 @@ wchar_t ***Table<T>::getData() {
             nT = (*nT).next;
 
         if (nT != nullptr && i != 10) {
-            t = nT->getData().getData().getData().getData();
+            t = new T(nT->getData().getData().getData().getData());
             endOutput = nT;
         }
         number++;
@@ -715,15 +711,14 @@ void Table<T>::selectSearch(int index) {
 
 template<typename T>
 void Table<T>::search(int index, wchar_t *data) {
-    Node<Node<T>> *element = rows[0];
+    Node<Node<T>> *element = rows.getHead();
     searchedRows.eraseAll();
     int lengthOfStr = ::wcslen(names[index + 1]);
-    /*data[lengthOfStr + 1] = 0;*/
     sortedRows.eraseAll();
     while (element != nullptr) {
-        T t = element->getData().getData();
+        T *t = new T(element->getData().getData());
         auto *ptr = new wchar_t[lengthOfStr + 1];
-        t.get(ptr, index);
+        get(ptr, index, t);
         if (::wcsstr(ptr, data) != nullptr) {
             sortedRows.pushBack(searchedRows.pushBack(element));
         }
@@ -774,12 +769,8 @@ Table<T>::merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *righ
     Node<Node<Node<Node<T>>>> *result = NULL;
     Node<Node<Node<Node<T>>>> *cur = NULL;
     int lengthOfStr = ::wcslen(names[index + 1]);
-    auto *str = new wchar_t[lengthOfStr + 1];
-    right->getData().getData().getData().getData().get(str, index);
-    char ptr = left->getData().getData().getData().getData().comparison(index, str) * direction;
+    char ptr = comparison(index, new T(left->getData().getData().getData().getData()), new T(right->getData().getData().getData().getData())) * direction;
 
-    delete[] str;
-    str = nullptr;
 
     if (ptr <= 0) {
         result = left;
@@ -790,12 +781,7 @@ Table<T>::merge(Node<Node<Node<Node<T>>>> *left, Node<Node<Node<Node<T>>>> *righ
     }
     cur = result;
     while (left != NULL && right != NULL) {
-        str = new wchar_t[lengthOfStr + 1];
-        right->getData().getData().getData().getData().get(str, index);
-        ptr = left->getData().getData().getData().getData().comparison(index, str) * direction;
-
-        delete[] str;
-        str = nullptr;
+        ptr = comparison(index, new T(left->getData().getData().getData().getData()), new T(right->getData().getData().getData().getData())) * direction;
 
         if (ptr <= 0) {
             cur->next = left;
@@ -859,9 +845,9 @@ wchar_t ***Table<T>::getDataNext() {
     } else
         nT = startOutput;
 
-    T t;
+    T *t;
     if (nT != nullptr)
-        t = nT->getData().getData().getData().getData();
+        t = new T(nT->getData().getData().getData().getData());
 
     for (int i = 0; i < 11; i++) {
         values[i] = new wchar_t *[countColumns];
@@ -876,7 +862,7 @@ wchar_t ***Table<T>::getDataNext() {
             value = new wchar_t[lengthOfStr + 1];
             if (nT != nullptr) {
                 auto *ptr = new wchar_t[lengthOfStr + 1];
-                t.get(ptr, j);
+                get(ptr, j, t);
                 ::wcsncpy(value, ptr, lengthOfStr + 1);
                 delete[] ptr;
                 ptr = nullptr;
@@ -890,7 +876,7 @@ wchar_t ***Table<T>::getDataNext() {
             nT = (*nT).next;
 
         if (nT != nullptr && i != 10) {
-            t = nT->getData().getData().getData().getData();
+            t = new T(nT->getData().getData().getData().getData());
             endOutput = nT;
         }
 
@@ -915,9 +901,9 @@ wchar_t ***Table<T>::getDataPrev() {
     } else
         nT = startOutput;
 
-    T t;
+    T *t;
     if (nT != nullptr)
-        t = nT->getData().getData().getData().getData();
+        t = new T(nT->getData().getData().getData().getData());
 
     for (int i = 0; i < 11; i++) {
         values[i] = new wchar_t *[countColumns];
@@ -932,7 +918,7 @@ wchar_t ***Table<T>::getDataPrev() {
             value = new wchar_t[lengthOfStr + 1];
             if (nT != nullptr) {
                 auto *ptr = new wchar_t[lengthOfStr + 1];
-                t.get(ptr, j);
+                get(ptr, j, t);
                 ::wcsncpy(value, ptr, lengthOfStr + 1);
                 delete[] ptr;
                 ptr = nullptr;
@@ -946,7 +932,7 @@ wchar_t ***Table<T>::getDataPrev() {
             nT = (*nT).next;
 
         if (nT != nullptr && i != 10) {
-            t = nT->getData().getData().getData().getData();
+            t = new T(nT->getData().getData().getData().getData());
             endOutput = nT;
         }
         number++;
@@ -965,9 +951,9 @@ wchar_t ***Table<T>::getDataByIndex(int index) {
 
     startOutput = sortedRows[index];
     Node<Node<Node<Node<T>>>> *nT = startOutput;
-    T t;
+    T *t;
     if (nT != nullptr)
-        t = nT->getData().getData().getData().getData();
+        t = new T(nT->getData().getData().getData().getData());
 
     for (int i = 0; i < 11; i++) {
         values[i] = new wchar_t *[countColumns];
@@ -982,7 +968,7 @@ wchar_t ***Table<T>::getDataByIndex(int index) {
             value = new wchar_t[lengthOfStr + 1];
             if (nT != nullptr) {
                 auto *ptr = new wchar_t[lengthOfStr + 1];
-                t.get(ptr, j);
+                get(ptr, j, t);
                 ::wcsncpy(value, ptr, lengthOfStr + 1);
                 delete[] ptr;
                 ptr = nullptr;
@@ -996,7 +982,7 @@ wchar_t ***Table<T>::getDataByIndex(int index) {
             nT = (*nT).next;
 
         if (nT != nullptr && i != 10) {
-            t = nT->getData().getData().getData().getData();
+            t = new T(nT->getData().getData().getData().getData());
             endOutput = nT;
         }
         number++;
@@ -1177,7 +1163,7 @@ void Table<T>::redrawScreen() {
     delete[] fieldsSearch;
     fieldsSearch = nullptr;
 
-
+    search(0, L"");
     auto ***fieldsValues = getDataByIndex(0);
 
     for (int i = 0; i < 11; i++) {
@@ -1206,15 +1192,8 @@ void Table<T>::redrawScreen() {
 
 template<typename T>
 int Table<T>::readListFromFile() {
-    std::ifstream in = std::ifstream(filename, ::ios::binary);
-    if (!in) {
-        ofstream newFile = std::ofstream(filename, ::ios::binary);
-        newFile.close();
-        in = std::ifstream(filename, ::ios::binary);
-    }
-    if (!in) {
-        throw std::ifstream::failure("Can't open file");
-    }
+    std::ifstream in(filename, ::ios::binary);
+    if (!in) throw std::ifstream::failure("Can't open file");
     in.seekg(0, std::ios_base::end);
     long long countElements = in.tellg() / sizeof(T);
     in.seekg(0, std::ios_base::beg);
@@ -1268,11 +1247,8 @@ void Table<T>::splitNames() {
 }
 
 template<typename T>
-Table<T>::Table(
-        char *filename,
-        const wchar_t *nameOfColumns,
-        unsigned char countColumns,
-        const char *types) {
+Table<T>::Table(char *filename, const wchar_t *nameOfColumns, unsigned char countColumns,
+                void (*get)(wchar_t *, int, T *), void (*set)(wchar_t *, int, T *), char (*comparison)(int, T *, T *)) {
     ::setlocale(LC_ALL, "");
 
     size_t countChars = ::strlen(filename) + 1;
@@ -1286,6 +1262,10 @@ Table<T>::Table(
 
     this->countColumns = countColumns + 1;
     splitNames();
+
+    this->comparison = comparison;
+    this->get = get;
+    this->set = set;
 
 }
 
