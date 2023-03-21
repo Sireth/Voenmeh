@@ -28,6 +28,8 @@ public:
 
     virtual void microwave() = 0;
 
+    virtual void special() = 0;
+
     virtual ~ITea() = default;
 };
 

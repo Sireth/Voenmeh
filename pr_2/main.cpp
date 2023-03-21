@@ -10,16 +10,21 @@
 
 #define SIZE 5
 
-#define CEYLON_TEA 1
-#define EARL_GREY_TEA 2
-#define GREEN_TEA 3
-#define LAPSANG_SOUCHONG_TEA 4
+enum teasNames{
+    CEYLON_TEA = 1,
+    EARL_GREY_TEA = 2,
+    GREEN_TEA = 3,
+    LAPSANG_SOUCHONG_TEA = 4,
+};
 
-#define BREW_ACTION 1
-#define DISPLAY_INFO_ACTION 2
-#define DRINK_ACTION 3
-#define BREW_WITH_MILK_ACTION 4
-#define MICROWAVE_ACTION 5
+enum actions{
+    BREW_ACTION = 1,
+    DISPLAY_INFO_ACTION = 2,
+    DRINK_ACTION = 3,
+    BREW_WITH_MILK_ACTION = 4,
+    MICROWAVE_ACTION = 5,
+    SPECIAL_ACTION =6,
+};
 
 
 #define EXIT_PROGRAM 999
@@ -79,6 +84,7 @@ void selectMainMenu() {
             }
         }
     } while (c != EXIT_PROGRAM);
+    exitProgram();
 }
 
 void createTea() {
@@ -171,10 +177,11 @@ void selectActionOnTea() {
     cout << DRINK_ACTION << ". Drink" << endl;
     cout << BREW_WITH_MILK_ACTION << ". Brew with milk" << endl;
     cout << MICROWAVE_ACTION << ". Microwave" << endl;
+    cout << SPECIAL_ACTION << ". Special*" << endl;
     cout << "Choose the desired action: ";
     do {
         action = readInt();
-        if (action <= MICROWAVE_ACTION) {
+        if (action <= SPECIAL_ACTION) {
             break;
         }
         cout << "You entered the number of a non-existent action. Try again: ";
@@ -199,6 +206,10 @@ void selectActionOnTea() {
         }
         case MICROWAVE_ACTION: {
             teas[index]->microwave();
+            break;
+        }
+        case SPECIAL_ACTION:{
+            teas[index]->special();
             break;
         }
         default: {

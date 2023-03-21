@@ -19,6 +19,10 @@ public:
     void microwave() override;
 
     void displayInfo() override;
+
+    static void addLemon();
+
+    void special() override;
 };
 
 

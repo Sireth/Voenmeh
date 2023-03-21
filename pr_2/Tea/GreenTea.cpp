@@ -32,3 +32,11 @@ void GreenTea::displayInfo() {
     ITea::displayInfo();
 }
 
+void GreenTea::addGinger() {
+    cout << "Adding ginger to your Green tea" << endl;
+}
+
+void GreenTea::special() {
+    addGinger();
+}
+

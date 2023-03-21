@@ -21,6 +21,10 @@ public:
     void microwave() override;
 
     void displayInfo() override;
+
+    static void addCinnamon();
+
+    void special() override;
 };
 
 

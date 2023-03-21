@@ -31,3 +31,11 @@ void CeylonTea::displayInfo() {
     cout << "Ceylon Tea: " << endl;
     ITea::displayInfo();
 }
+
+void CeylonTea::addLemon() {
+    cout << "Adding lemon to your Ceylon tea" << endl;
+}
+
+void CeylonTea::special() {
+    addLemon();
+}

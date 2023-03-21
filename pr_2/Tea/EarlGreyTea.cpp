@@ -32,3 +32,11 @@ void EarlGreyTea::displayInfo() {
 void EarlGreyTea::drink() {
     cout << "Drinking Earl Grey tea" << endl;
 }
+
+void EarlGreyTea::addHoney() {
+    cout << "Adding honey to your Earl Grey tea" << endl;
+}
+
+void EarlGreyTea::special() {
+    addHoney();
+}

@@ -19,6 +19,10 @@ public:
     void displayInfo() override;
 
     void microwave() override;
+
+    static void addGinger();
+
+    void special() override;
 };
 
 

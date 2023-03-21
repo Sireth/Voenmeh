@@ -54,9 +54,7 @@ LinkedList<T>::LinkedList() {
 
 template<typename T>
 LinkedList<T>::~LinkedList() {
-    while (head_ != nullptr) {
-        popFront();
-    }
+    eraseAll();
 }
 
 template<typename T>

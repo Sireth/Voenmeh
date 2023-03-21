@@ -32,3 +32,11 @@ void LapsangSouchongTea::displayInfo() {
     cout << "Lapsang Souchong Tea: " << endl;
     ITea::displayInfo();
 }
+
+void LapsangSouchongTea::addCinnamon() {
+    cout << "Adding cinnamon to your Lapsang Souchong tea" << endl;
+}
+
+void LapsangSouchongTea::special() {
+    addCinnamon();
+}
