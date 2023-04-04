@@ -255,6 +255,86 @@ build pr_2: CXX_EXECUTABLE_LINKER__pr_2_Debug CMakeFiles/pr_2.dir/pr_2/Tea/EarlG
   TARGET_FILE = pr_2
   TARGET_PDB = pr_2.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target pr_1_2_struct
+
+
+#############################################
+# Order-only phony target for pr_1_2_struct
+
+build cmake_object_order_depends_target_pr_1_2_struct: phony || CMakeFiles/pr_1_2_struct.dir
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/main.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/main.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/main.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator/Cell.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/maze_generator/Cell.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator/Cell.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator/Grid.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/maze_generator/Grid.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator/Grid.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/RendererWindow.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/engine/RendererWindow.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/RendererWindow.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/GameObject.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/engine/GameObject.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/GameObject.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/Vector2.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/engine/Vector2.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/Vector2.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/ThreadPool.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/engine/ThreadPool.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/ThreadPool.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts/GenCell.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/scripts/GenCell.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts/GenCell.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts
+
+build CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts/PasserMaze.cpp.o: CXX_COMPILER__pr_1_2_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_1_2_struct/scripts/PasserMaze.cpp || cmake_object_order_depends_target_pr_1_2_struct
+  DEP_FILE = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts/PasserMaze.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target pr_1_2_struct
+
+
+#############################################
+# Link the executable pr_1_2_struct
+
+build pr_1_2_struct: CXX_EXECUTABLE_LINKER__pr_1_2_struct_Debug CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/main.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator/Cell.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/maze_generator/Grid.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/RendererWindow.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/GameObject.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/Vector2.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/engine/ThreadPool.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts/GenCell.cpp.o CMakeFiles/pr_1_2_struct.dir/pr_1_2_struct/scripts/PasserMaze.cpp.o
+  FLAGS = --coverage -g
+  LINK_LIBRARIES = -lSDL2_image  -lSDL2
+  OBJECT_DIR = CMakeFiles/pr_1_2_struct.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = pr_1_2_struct
+  TARGET_PDB = pr_1_2_struct.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -290,7 +370,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage
 
-build all: phony Tests pr_1 pr_1_struct pr_2
+build all: phony Tests pr_1 pr_1_struct pr_2 pr_1_2_struct
 
 # =============================================================================
 # Built-in targets

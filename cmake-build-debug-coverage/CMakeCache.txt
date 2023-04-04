@@ -224,9 +224,6 @@ PKG_CONFIG_ARGN:STRING=
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
-//The directory containing a CMake configuration file for SDL2.
-SDL2_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/SDL2
-
 //Value Computed by CMake
 Term_2_BINARY_DIR:STATIC=/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage
 

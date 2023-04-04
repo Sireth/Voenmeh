@@ -2,5 +2,6 @@
 /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug/CMakeFiles/pr_1.dir
 /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug/CMakeFiles/pr_1_struct.dir
 /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug/CMakeFiles/pr_2.dir
+/media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug/CMakeFiles/pr_1_2_struct.dir
 /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug/CMakeFiles/edit_cache.dir
 /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
