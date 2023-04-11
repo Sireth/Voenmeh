@@ -43,6 +43,9 @@ public:
     void clear();
 
     class Iterator {
+
+        friend List;
+
     private:
         Node *current;
 
@@ -87,7 +90,55 @@ public:
     Iterator begin() const;
 
     Iterator end() const;
+
+public:
+    T &at(int index) const;
+
+    void erase(Iterator it);
+
+    void remove(const T &value);
 };
+
+template<typename T>
+T &List<T>::at(int index) const {
+    if (index < 0 || index >= static_cast<int>(m_size))
+        throw std::out_of_range("Index out of range");
+    auto it = begin();
+    for (int i = 0; i < index; ++i)
+        ++it;
+    return *it;
+}
+
+template<typename T>
+void List<T>::erase(Iterator it) {
+    if (it == end())
+        return;
+    if (it == begin()) {
+        pop_front();
+        return;
+    }
+    if (it.current == m_tail) {
+        pop_back();
+        return;
+    }
+    it.current->m_prev->m_next = it.current->m_next;
+    it.current->m_next->m_prev = it.current->m_prev;
+    delete it.current;
+    --m_size;
+}
+
+template<typename T>
+void List<T>::remove(const T &value) {
+    auto it = begin();
+    while (it != end()) {
+        if (*it == value) {
+            erase(it);
+            it = begin();
+        } else {
+            ++it;
+        }
+    }
+}
 
 template<typename T>
 typename List<T>::Iterator &List<T>::Iterator::operator+=(int n) {
