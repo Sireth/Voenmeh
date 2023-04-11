@@ -51,7 +51,7 @@ void PasserMaze::fixedUpdate() {
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> elapsed_ms =
                 end - startTime;
-        if (elapsed_ms.count() > 100) {
+        if (elapsed_ms.count() > 0) {
             startTime = end;
 
             m_current->setVisited(true);

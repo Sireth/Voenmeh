@@ -237,11 +237,11 @@ public:
         pointer ptr_;
     };
 
-    iterator begin() {
+    iterator begin() const {
         return iterator(m_data);
     }
 
-    iterator end() {
+    iterator end() const {
         return iterator(m_data + m_size);
     }
 

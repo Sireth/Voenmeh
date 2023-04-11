@@ -335,6 +335,49 @@ build pr_1_2_struct: CXX_EXECUTABLE_LINKER__pr_1_2_struct_Debug CMakeFiles/pr_1_
   TARGET_FILE = pr_1_2_struct
   TARGET_PDB = pr_1_2_struct.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target pr_2_1_struct
+
+
+#############################################
+# Order-only phony target for pr_2_1_struct
+
+build cmake_object_order_depends_target_pr_2_1_struct: phony || CMakeFiles/pr_2_1_struct.dir
+
+build CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/main.cpp.o: CXX_COMPILER__pr_2_1_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_2_1_struct/main.cpp || cmake_object_order_depends_target_pr_2_1_struct
+  DEP_FILE = CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/main.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_2_1_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct
+
+build CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph/GraphMatrix.cpp.o: CXX_COMPILER__pr_2_1_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_2_1_struct/graph/GraphMatrix.cpp || cmake_object_order_depends_target_pr_2_1_struct
+  DEP_FILE = CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph/GraphMatrix.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_2_1_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph
+
+build CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph/GraphList.cpp.o: CXX_COMPILER__pr_2_1_struct_Debug /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/pr_2_1_struct/graph/GraphList.cpp || cmake_object_order_depends_target_pr_2_1_struct
+  DEP_FILE = CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph/GraphList.cpp.o.d
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_2_1_struct.dir
+  OBJECT_FILE_DIR = CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target pr_2_1_struct
+
+
+#############################################
+# Link the executable pr_2_1_struct
+
+build pr_2_1_struct: CXX_EXECUTABLE_LINKER__pr_2_1_struct_Debug CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/main.cpp.o CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph/GraphMatrix.cpp.o CMakeFiles/pr_2_1_struct.dir/pr_2_1_struct/graph/GraphList.cpp.o
+  FLAGS = --coverage -g
+  OBJECT_DIR = CMakeFiles/pr_2_1_struct.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = pr_2_1_struct
+  TARGET_PDB = pr_2_1_struct.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -370,7 +413,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 #############################################
 # Folder: /media/sireth/F0CE491ACE48DA8C/Projects/CppProjects/Term_2/cmake-build-debug-coverage
 
-build all: phony Tests pr_1 pr_1_struct pr_2 pr_1_2_struct
+build all: phony Tests pr_1 pr_1_struct pr_2 pr_1_2_struct pr_2_1_struct
 
 # =============================================================================
 # Built-in targets
