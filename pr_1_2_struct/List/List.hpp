@@ -2,20 +2,21 @@
 #define TERM_2_LIST_HPP
 
 #include <cstddef>
+#include <stdexcept>  // for std::out_of_range
 
 template<typename T>
 class List {
 private:
     struct Node {
         T m_data;
-        Node* m_next;
-        Node* m_prev;
+        Node *m_next;
+        Node *m_prev;
 
-        Node(const T& data) : m_data(data), m_next(nullptr), m_prev(nullptr) {}
+        Node(const T &data) : m_data(data), m_next(nullptr), m_prev(nullptr) {}
     };
 
-    Node* m_head;
-    Node* m_tail;
+    Node *m_head;
+    Node *m_tail;
     size_t m_size;
 
 public:
@@ -23,13 +24,13 @@ public:
 
     ~List();
 
-    List(const List& other);
+    List(const List &other);
 
-    List& operator=(const List& other);
+    List &operator=(const List &other);
 
-    void push_back(const T& data);
+    void push_back(const T &data);
 
-    void push_front(const T& data);
+    void push_front(const T &data);
 
     void pop_back();
 
@@ -43,30 +44,132 @@ public:
 
     class Iterator {
     private:
-        Node* current;
+        Node *current;
 
     public:
-        explicit Iterator(Node* node) : current(node) {}
+        explicit Iterator(Node *node) : current(node) {}
 
-        Iterator& operator++();
+        Iterator &operator++();
 
         const Iterator operator++(int);
 
-        Iterator& operator--();
+        Iterator &operator--();
 
         const Iterator operator--(int);
 
-        T& operator*() const;
+        T &operator*() const;
 
-        bool operator==(const Iterator& other) const;
+        bool operator==(const Iterator &other) const;
 
-        bool operator!=(const Iterator& other) const;
+        bool operator!=(const Iterator &other) const;
+
+        Iterator &operator+=(int n);
+
+        Iterator &operator-=(int n);
+
+        Iterator operator+(int n) const;
+
+        Iterator operator-(int n) const;
+
+        int operator-(const Iterator &other) const;
+
+        T &operator[](int n) const;
+
+        bool operator<(const Iterator &other) const;
+
+        bool operator>(const Iterator &other) const;
+
+        bool operator<=(const Iterator &other) const;
+
+        bool operator>=(const Iterator &other) const;
     };
 
     Iterator begin() const;
 
     Iterator end() const;
 };
+
+template<typename T>
+typename List<T>::Iterator &List<T>::Iterator::operator+=(int n) {
+    if (n < 0) {
+        return *this -= (-n);
+    }
+
+    for (int i = 0; i < n && current != nullptr; ++i) {
+        current = current->m_next;
+    }
+
+    return *this;
+}
+
+template<typename T>
+typename List<T>::Iterator &List<T>::Iterator::operator-=(int n) {
+    if (n < 0) {
+        return *this += (-n);
+    }
+
+    for (int i = 0; i < n && current != nullptr; ++i) {
+        current = current->m_prev;
+    }
+
+    return *this;
+}
+
+template<typename T>
+typename List<T>::Iterator List<T>::Iterator::operator+(int n) const {
+    Iterator result(*this);
+    result += n;
+    return result;
+}
+
+template<typename T>
+typename List<T>::Iterator List<T>::Iterator::operator-(int n) const {
+    Iterator result(*this);
+    result -= n;
+    return result;
+}
+
+template<typename T>
+int List<T>::Iterator::operator-(const Iterator &other) const {
+    int count = 0;
+    Node *node = current;
+    while (node != other.current) {
+        if (node == nullptr) {
+            throw std::out_of_range("Iterator out of range");
+        }
+        if (node == other.current) {
+            return count;
+        }
+        ++count;
+        node = node->m_prev;
+    }
+    return count;
+}
+
+template<typename T>
+T &List<T>::Iterator::operator[](int n) const {
+    return *(*this + n);
+}
+
+template<typename T>
+bool List<T>::Iterator::operator<(const Iterator &other) const {
+    return current != nullptr && other.current != nullptr && current->m_data < other.current->m_data;
+}
+
+template<typename T>
+bool List<T>::Iterator::operator>(const Iterator &other) const {
+    return current != nullptr && other.current != nullptr && current->m_data > other.current->m_data;
+}
+
+template<typename T>
+bool List<T>::Iterator::operator<=(const Iterator &other) const {
+    return current != nullptr && other.current != nullptr && current->m_data <= other.current->m_data;
+}
+
+template<typename T>
+bool List<T>::Iterator::operator>=(const Iterator &other) const {
+    return current != nullptr && other.current != nullptr && current->m_data >= other.current->m_data;
+}
 
 template<typename T>
 typename List<T>::Iterator &List<T>::Iterator::operator++() {
@@ -112,7 +215,7 @@ typename List<T>::Iterator &List<T>::Iterator::operator--() {
 template<typename T>
 List<T>::~List() {
     while (m_head) {
-        Node* temp = m_head;
+        Node *temp = m_head;
         m_head = m_head->m_next;
         delete temp;
     }
@@ -143,12 +246,11 @@ List<T> &List<T>::operator=(const List &other) {
 
 template<typename T>
 void List<T>::push_back(const T &data) {
-    Node* newNode = new Node(data);
+    Node *newNode = new Node(data);
     if (m_tail == nullptr) {
         m_head = newNode;
         m_tail = newNode;
-    }
-    else {
+    } else {
         m_tail->m_next = newNode;
         newNode->m_prev = m_tail;
         m_tail = newNode;
@@ -158,12 +260,11 @@ void List<T>::push_back(const T &data) {
 
 template<typename T>
 void List<T>::push_front(const T &data) {
-    Node* newNode = new Node(data);
+    Node *newNode = new Node(data);
     if (m_head == nullptr) {
         m_head = newNode;
         m_tail = newNode;
-    }
-    else {
+    } else {
         m_head->m_prev = newNode;
         newNode->m_next = m_head;
         m_head = newNode;
@@ -177,12 +278,11 @@ void List<T>::pop_back() {
         return;
     }
 
-    Node* temp = m_tail;
+    Node *temp = m_tail;
     m_tail = m_tail->m_prev;
     if (m_tail != nullptr) {
         m_tail->m_next = nullptr;
-    }
-    else {
+    } else {
         m_head = nullptr;
     }
     delete temp;
@@ -195,12 +295,11 @@ void List<T>::pop_front() {
         return;
     }
 
-    Node* temp = m_head;
+    Node *temp = m_head;
     m_head = m_head->m_next;
     if (m_head != nullptr) {
         m_head->m_prev = nullptr;
-    }
-    else {
+    } else {
         m_tail = nullptr;
     }
     delete temp;
@@ -220,7 +319,7 @@ bool List<T>::empty() const {
 template<typename T>
 void List<T>::clear() {
     while (m_head) {
-        Node* temp = m_head;
+        Node *temp = m_head;
         m_head = m_head->m_next;
         delete temp;
     }
